@@ -102,3 +102,11 @@ Antes de abrir PR, siga:
 - Subir servidor Fastify com rotas basicas (`/health`)
 - Implementar primeiros casos de uso de `work-logs`
 - Adicionar testes unitarios de regras de dominio
+
+
+## Autor
+
+**Bruno S Velho**
+- Email: bruno.velho@gmail.com
+- GitHub: https://github.com/vbruno
+- LinkedIn: https://www.linkedin.com/in/brunovelho/
