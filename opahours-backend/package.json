@@ -1,0 +1,24 @@
+{
+  "name": "opahours-backend",
+  "version": "1.0.0",
+  "description": "Backend in TypeScript for time tracking and invoice billing.",
+  "main": "server.ts",
+  "directories": {
+    "test": "test"
+  },
+  "type": "module",
+  "scripts": {
+    "dev": "tsx watch src/server.ts",
+    "build": "tsc",
+    "start": "node dist/server.js",
+    "test": "vitest",
+    "test:cov": "vitest --coverage",
+    "lint": "eslint .",
+    "format": "prettier -w .",
+    "db:generate": "drizzle-kit generate",
+    "db:migrate": "drizzle-kit migrate"
+  },
+  "keywords": [],
+  "author": "Bruno S. Velho",
+  "license": "MIT"
+}
