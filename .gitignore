@@ -1,2 +1,7 @@
+node_modules/
+opahours-backend/node_modules/
+opahours-backend/dist/
+.env
+opahours-backend/.env
 notes/
 /notes/Collaboration_Contract.md

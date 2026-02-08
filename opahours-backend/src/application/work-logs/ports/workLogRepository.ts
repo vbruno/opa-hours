@@ -1,4 +1,4 @@
-import type { WorkLog } from "@/domain/work-logs/entities/workLog";
+import type { WorkLog } from "../../../domain/work-logs/entities/workLog.js";
 
 export interface WorkLogRepository {
   findById(id: string): Promise<WorkLog | null>;
