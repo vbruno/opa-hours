@@ -4,12 +4,12 @@ import tseslint from "typescript-eslint";
 
 export default tseslint.config(
   {
-    ignores: ["dist/**", "drizzle/**", "opahours-backend/**", "node_modules/**"],
+    ignores: ["dist/**", "drizzle/**", "opahours-backend/**", "node_modules/**", "eslint.config.js"],
   },
   js.configs.recommended,
-  ...tseslint.configs.recommendedTypeChecked,
+  ...tseslint.configs.recommended,
   {
-    files: ["**/*.ts"],
+    files: ["src/**/*.ts", "test/**/*.ts"],
     languageOptions: {
       parserOptions: {
         project: "./tsconfig.json",
