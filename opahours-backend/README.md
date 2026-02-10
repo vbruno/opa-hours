@@ -65,6 +65,48 @@ cp .env.example .env
 
 3. Ajuste `DATABASE_URL` no `.env` para sua base local.
 
+## Bootstrap rapido (5 minutos)
+
+Executar em `opahours-backend/`:
+
+1. Instalar dependencias:
+
+```bash
+npm install
+```
+
+2. Preparar ambiente:
+
+```bash
+cp .env.example .env
+```
+
+3. Validar conexao com banco:
+
+```bash
+npm run db:check
+```
+
+4. Subir API:
+
+```bash
+npm run dev
+```
+
+5. Validar endpoints base:
+
+```bash
+curl -i http://localhost:3333/health
+curl -i http://localhost:3333/docs
+```
+
+6. Validacao minima local:
+
+```bash
+npm run lint --silent
+npm run test --silent -- --run
+```
+
 ## Comandos principais
 
 Executar em `opahours-backend/`:
@@ -76,6 +118,7 @@ npm run start
 npm run lint
 npm run test
 npm run test:cov
+npm run db:check
 npm run db:generate
 npm run db:migrate
 ```
