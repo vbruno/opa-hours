@@ -4,7 +4,12 @@ import tseslint from "typescript-eslint";
 
 export default tseslint.config(
   {
-    ignores: ["dist/**", "drizzle/**", "opahours-backend/**", "node_modules/**", "eslint.config.js"],
+    ignores: [
+      "dist/**",
+      "drizzle/**",
+      "node_modules/**",
+      "eslint.config.js",
+    ],
   },
   js.configs.recommended,
   ...tseslint.configs.recommended,
