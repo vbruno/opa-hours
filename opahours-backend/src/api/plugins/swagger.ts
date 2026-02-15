@@ -11,6 +11,31 @@ const swaggerPluginHandler: FastifyPluginAsync = async (app) => {
         description: "API para controle de horas e faturamento por invoice.",
         version: "1.0.0",
       },
+      servers: [
+        {
+          url: "http://localhost:3333",
+          description: "Local development",
+        },
+      ],
+      tags: [
+        { name: "System", description: "System and diagnostics endpoints" },
+        { name: "Auth", description: "Authentication and session endpoints" },
+        { name: "Users", description: "Single-user account management endpoints" },
+      ],
+      components: {
+        securitySchemes: {
+          bearerAuth: {
+            type: "http",
+            scheme: "bearer",
+            bearerFormat: "JWT",
+          },
+          refreshTokenCookie: {
+            type: "apiKey",
+            in: "cookie",
+            name: "refreshToken",
+          },
+        },
+      },
     },
   });
 

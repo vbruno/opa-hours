@@ -35,6 +35,7 @@ Objetivo: manter consistencia tecnica, reduzir retrabalho e facilitar escala.
 - Erros de negocio devem usar `AppError` com `code` estavel.
 - Erros internos inesperados nao devem vazar detalhes sensiveis para cliente.
 - Definir mapeamento padrao de erro para resposta HTTP.
+- Mensagens de erro devem ser centralizadas em catalogo unico (evitar string solta em servico/rota).
 
 ## 5) Banco de dados e transacoes
 
@@ -52,8 +53,11 @@ Objetivo: manter consistencia tecnica, reduzir retrabalho e facilitar escala.
 - Contratos estaveis e versionados quando houver quebra.
 - Nomes de rotas e payloads consistentes com o dominio.
 - Endpoints devem retornar erros estruturados (`code`, `message`, `details`).
+- Incluir `requestId` no payload de erro para correlacao com logs.
 - `GET /health` obrigatorio e simples (sem regra de negocio).
 - Swagger/OpenAPI deve acompanhar o estado real da API.
+- Toda alteracao de rota (path, params, body, response, codigos HTTP) deve atualizar Swagger/OpenAPI no mesmo escopo.
+- Nenhuma tarefa de API e considerada concluida sem validacao manual de `GET /docs`.
 - Toda rota deve ser classificada em `config.access` como `public` ou `private`.
 - Rotas `private` devem usar `app.authenticate` no preHandler.
 

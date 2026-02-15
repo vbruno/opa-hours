@@ -59,6 +59,12 @@ Princípios:
 * toda rota deve declarar `config.access` como `public` ou `private`
 * rotas `private` usam `app.authenticate`
 
+### ✅ D7 — Contrato de Erro Padronizado
+
+* payload de erro da API padronizado com `code`, `message`, `details`, `requestId`
+* validação de payload retorna `VALIDATION_ERROR` com `details.issues[]`
+* mensagens de erro centralizadas em catálogo único (`errorMessages.ts`)
+
 ---
 
 ## 3) Invariantes (Regras que NUNCA podem quebrar)
@@ -333,6 +339,7 @@ Em uma transação:
 * [x] Erros padronizados
 * [x] Autenticação (JWT + refresh cookie)
 * [x] Classificação de acesso (`public` / `private`)
+* [x] Regra ativa: toda mudança de API deve refletir em Swagger/OpenAPI
 * [ ] Rotas de `work-logs`
 * [ ] Rotas de `invoices`
 
@@ -355,3 +362,5 @@ Em uma transação:
 * [x] 2026-02-15: auth definido com refresh token em cookie HttpOnly
 * [x] 2026-02-15: sistema fechado em modo single-user sem roles/members
 * [x] 2026-02-15: rotas classificadas com `config.access` (`public` / `private`)
+* [x] 2026-02-15: error handler extraído para plugin dedicado e contrato de erro HTTP padronizado
+* [x] 2026-02-15: validações de usuário reforçadas em API + serviço + constraints no banco

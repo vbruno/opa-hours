@@ -43,10 +43,69 @@ const ensureSelf = (request: FastifyRequest, targetUserId: string): void => {
   }
 };
 
+const userSchema = {
+  type: "object",
+  required: ["id", "name", "email", "isActive", "createdAt", "updatedAt"],
+  properties: {
+    id: { type: "string", format: "uuid" },
+    name: { type: "string" },
+    email: { type: "string", format: "email" },
+    isActive: { type: "boolean" },
+    createdAt: { type: "string", format: "date-time" },
+    updatedAt: { type: "string", format: "date-time" },
+  },
+};
+
+const errorSchema = {
+  type: "object",
+  required: ["code", "message", "details", "requestId"],
+  properties: {
+    code: { type: "string" },
+    message: { type: "string" },
+    details: {
+      anyOf: [
+        { type: "object", additionalProperties: true },
+        { type: "null" },
+      ],
+    },
+    requestId: { type: "string" },
+  },
+};
+
+const okSchema = {
+  type: "object",
+  required: ["ok"],
+  properties: {
+    ok: { type: "boolean" },
+  },
+};
+
 export const usersRoutes: FastifyPluginAsync = async (app) => {
   app.post(
     "/users",
-    { config: { access: "public" } },
+    {
+      config: { access: "public" },
+      schema: {
+        tags: ["Users"],
+        summary: "Bootstrap first user",
+        description: "Create initial user account. Allowed only when no user exists.",
+        body: {
+          type: "object",
+          required: ["name", "email", "password"],
+          properties: {
+            name: { type: "string", minLength: 2, maxLength: 120 },
+            email: { type: "string", format: "email" },
+            password: { type: "string", minLength: 8, maxLength: 72 },
+            isActive: { type: "boolean", default: true },
+          },
+        },
+        response: {
+          201: userSchema,
+          400: errorSchema,
+          409: errorSchema,
+        },
+      },
+    },
     async (request: FastifyRequest, reply: FastifyReply) => {
       const body = createUserBodySchema.parse(request.body);
       const usersCount = await userService.countUsers();
@@ -69,7 +128,23 @@ export const usersRoutes: FastifyPluginAsync = async (app) => {
 
   app.get(
     "/users",
-    { preHandler: [app.authenticate], config: { access: "private" } },
+    {
+      preHandler: [app.authenticate],
+      config: { access: "private" },
+      schema: {
+        tags: ["Users"],
+        summary: "List users",
+        description: "Single-user mode: returns only the authenticated user.",
+        security: [{ bearerAuth: [] }],
+        response: {
+          200: {
+            type: "array",
+            items: userSchema,
+          },
+          401: errorSchema,
+        },
+      },
+    },
     async (request) => {
       const user = await userService.getUserById(request.user!.sub);
 
@@ -79,7 +154,28 @@ export const usersRoutes: FastifyPluginAsync = async (app) => {
 
   app.get(
     "/users/:id",
-    { preHandler: [app.authenticate], config: { access: "private" } },
+    {
+      preHandler: [app.authenticate],
+      config: { access: "private" },
+      schema: {
+        tags: ["Users"],
+        summary: "Get user by id",
+        security: [{ bearerAuth: [] }],
+        params: {
+          type: "object",
+          required: ["id"],
+          properties: {
+            id: { type: "string", format: "uuid" },
+          },
+        },
+        response: {
+          200: userSchema,
+          401: errorSchema,
+          403: errorSchema,
+          404: errorSchema,
+        },
+      },
+    },
     async (request) => {
       const params = idParamsSchema.parse(request.params);
       ensureSelf(request, params.id);
@@ -90,7 +186,40 @@ export const usersRoutes: FastifyPluginAsync = async (app) => {
 
   app.put(
     "/users/:id",
-    { preHandler: [app.authenticate], config: { access: "private" } },
+    {
+      preHandler: [app.authenticate],
+      config: { access: "private" },
+      schema: {
+        tags: ["Users"],
+        summary: "Update user by id",
+        security: [{ bearerAuth: [] }],
+        params: {
+          type: "object",
+          required: ["id"],
+          properties: {
+            id: { type: "string", format: "uuid" },
+          },
+        },
+        body: {
+          type: "object",
+          minProperties: 1,
+          properties: {
+            name: { type: "string", minLength: 2, maxLength: 120 },
+            email: { type: "string", format: "email" },
+            password: { type: "string", minLength: 8, maxLength: 72 },
+            isActive: { type: "boolean" },
+          },
+        },
+        response: {
+          200: userSchema,
+          400: errorSchema,
+          401: errorSchema,
+          403: errorSchema,
+          404: errorSchema,
+          409: errorSchema,
+        },
+      },
+    },
     async (request) => {
       const params = idParamsSchema.parse(request.params);
       ensureSelf(request, params.id);
@@ -102,7 +231,28 @@ export const usersRoutes: FastifyPluginAsync = async (app) => {
 
   app.delete(
     "/users/:id",
-    { preHandler: [app.authenticate], config: { access: "private" } },
+    {
+      preHandler: [app.authenticate],
+      config: { access: "private" },
+      schema: {
+        tags: ["Users"],
+        summary: "Delete user by id",
+        security: [{ bearerAuth: [] }],
+        params: {
+          type: "object",
+          required: ["id"],
+          properties: {
+            id: { type: "string", format: "uuid" },
+          },
+        },
+        response: {
+          200: okSchema,
+          401: errorSchema,
+          403: errorSchema,
+          404: errorSchema,
+        },
+      },
+    },
     async (request) => {
       const params = idParamsSchema.parse(request.params);
       ensureSelf(request, params.id);

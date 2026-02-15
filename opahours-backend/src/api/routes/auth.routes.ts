@@ -52,22 +52,130 @@ const clearRefreshCookieOnReply = (reply: FastifyReply): void => {
   reply.header("Set-Cookie", clearRefreshCookie());
 };
 
+const authUserSchema = {
+  type: "object",
+  required: ["id", "name", "email", "isActive", "createdAt", "updatedAt"],
+  properties: {
+    id: { type: "string", format: "uuid" },
+    name: { type: "string" },
+    email: { type: "string", format: "email" },
+    isActive: { type: "boolean" },
+    createdAt: { type: "string", format: "date-time" },
+    updatedAt: { type: "string", format: "date-time" },
+  },
+};
+
+const authSuccessSchema = {
+  type: "object",
+  required: ["user", "accessToken"],
+  properties: {
+    user: authUserSchema,
+    accessToken: { type: "string" },
+  },
+};
+
+const okSchema = {
+  type: "object",
+  required: ["ok"],
+  properties: {
+    ok: { type: "boolean" },
+  },
+};
+
+const errorSchema = {
+  type: "object",
+  required: ["code", "message", "details", "requestId"],
+  properties: {
+    code: { type: "string" },
+    message: { type: "string" },
+    details: {
+      anyOf: [
+        { type: "object", additionalProperties: true },
+        { type: "null" },
+      ],
+    },
+    requestId: { type: "string" },
+  },
+};
+
 export const authRoutes: FastifyPluginAsync = async (app) => {
-  app.post("/auth/login", { config: { access: "public" } }, async (request, reply) => {
-    const body = loginBodySchema.parse(request.body);
-    const { user, tokens } = await authService.login(body);
+  app.post(
+    "/auth/login",
+    {
+      config: { access: "public" },
+      schema: {
+        tags: ["Auth"],
+        summary: "Login",
+        description: "Authenticate user and start session. Returns access token and sets refresh cookie.",
+        body: {
+          type: "object",
+          required: ["email", "password"],
+          properties: {
+            email: { type: "string", format: "email" },
+            password: { type: "string", minLength: 8, maxLength: 72 },
+          },
+        },
+        response: {
+          200: {
+            ...authSuccessSchema,
+            headers: {
+              "Set-Cookie": {
+                description: "HttpOnly refresh cookie",
+                schema: { type: "string" },
+              },
+            },
+          },
+          401: errorSchema,
+          403: errorSchema,
+          400: errorSchema,
+        },
+      },
+    },
+    async (request, reply) => {
+      const body = loginBodySchema.parse(request.body);
+      const { user, tokens } = await authService.login(body);
 
-    reply.header("Set-Cookie", buildRefreshCookie(tokens.refreshToken));
+      reply.header("Set-Cookie", buildRefreshCookie(tokens.refreshToken));
 
-    return {
-      user,
-      accessToken: tokens.accessToken,
-    };
-  });
+      return {
+        user,
+        accessToken: tokens.accessToken,
+      };
+    },
+  );
 
   app.post(
     "/auth/refresh",
-    { config: { access: "public" } },
+    {
+      config: { access: "public" },
+      schema: {
+        tags: ["Auth"],
+        summary: "Refresh session",
+        description: "Rotate refresh cookie and issue a new access token.",
+        security: [{ refreshTokenCookie: [] }],
+        parameters: [
+          {
+            in: "cookie",
+            name: "refreshToken",
+            required: true,
+            schema: { type: "string" },
+            description: "Refresh token cookie set by login.",
+          },
+        ],
+        response: {
+          200: {
+            ...authSuccessSchema,
+            headers: {
+              "Set-Cookie": {
+                description: "Rotated HttpOnly refresh cookie",
+                schema: { type: "string" },
+              },
+            },
+          },
+          401: errorSchema,
+        },
+      },
+    },
     async (request, reply) => {
     const refreshToken = getCookieValue(
       request.headers.cookie,
@@ -99,28 +207,72 @@ export const authRoutes: FastifyPluginAsync = async (app) => {
     },
   );
 
-  app.post("/auth/logout", { config: { access: "public" } }, async (request, reply) => {
-    const refreshToken = getCookieValue(
-      request.headers.cookie,
-      REFRESH_COOKIE_NAME,
-    );
+  app.post(
+    "/auth/logout",
+    {
+      config: { access: "public" },
+      schema: {
+        tags: ["Auth"],
+        summary: "Logout",
+        description: "Revoke refresh token when present and always clear refresh cookie.",
+        security: [{ refreshTokenCookie: [] }],
+        parameters: [
+          {
+            in: "cookie",
+            name: "refreshToken",
+            required: false,
+            schema: { type: "string" },
+          },
+        ],
+        response: {
+          200: {
+            ...okSchema,
+            headers: {
+              "Set-Cookie": {
+                description: "Refresh cookie cleared (Max-Age=0)",
+                schema: { type: "string" },
+              },
+            },
+          },
+        },
+      },
+    },
+    async (request, reply) => {
+      const refreshToken = getCookieValue(
+        request.headers.cookie,
+        REFRESH_COOKIE_NAME,
+      );
 
-    if (refreshToken) {
-      try {
-        await authService.logout({ refreshToken });
-      } catch {
-        // Logout is idempotent: invalid/expired token still clears cookie.
+      if (refreshToken) {
+        try {
+          await authService.logout({ refreshToken });
+        } catch {
+          // Logout is idempotent: invalid/expired token still clears cookie.
+        }
       }
-    }
 
-    clearRefreshCookieOnReply(reply);
+      clearRefreshCookieOnReply(reply);
 
-    return { ok: true };
-  });
+      return { ok: true };
+    },
+  );
 
   app.get(
     "/auth/me",
-    { preHandler: [app.authenticate], config: { access: "private" } },
+    {
+      preHandler: [app.authenticate],
+      config: { access: "private" },
+      schema: {
+        tags: ["Auth"],
+        summary: "Get current user",
+        description: "Return authenticated user profile from access token context.",
+        security: [{ bearerAuth: [] }],
+        response: {
+          200: authUserSchema,
+          401: errorSchema,
+        },
+      },
+    },
     async (request) => authService.getUserById(request.user!.sub),
   );
 };

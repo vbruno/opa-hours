@@ -1,0 +1,340 @@
+{
+  "_type": "export",
+  "__export_format": 4,
+  "__export_date": "2026-02-15T00:00:00.000Z",
+  "__export_source": "codex:gpt-5",
+  "resources": [
+    {
+      "_id": "wrk_opahours_backend",
+      "_type": "workspace",
+      "name": "OpaHours Backend",
+      "description": "Requests para testar o backend local do OpaHours",
+      "scope": "collection"
+    },
+    {
+      "_id": "env_opahours_backend_base",
+      "_type": "environment",
+      "parentId": "wrk_opahours_backend",
+      "name": "Base Environment",
+      "data": {
+        "base_url": "http://localhost:3333",
+        "email": "admin@example.com",
+        "password": "12345678",
+        "access_token": "",
+        "user_id": ""
+      },
+      "color": null,
+      "isPrivate": false,
+      "metaSortKey": 1
+    },
+    {
+      "_id": "fld_health",
+      "_type": "request_group",
+      "parentId": "wrk_opahours_backend",
+      "name": "Health",
+      "description": "",
+      "environment": {},
+      "environmentPropertyOrder": null,
+      "metaSortKey": 2
+    },
+    {
+      "_id": "fld_auth",
+      "_type": "request_group",
+      "parentId": "wrk_opahours_backend",
+      "name": "Auth",
+      "description": "",
+      "environment": {},
+      "environmentPropertyOrder": null,
+      "metaSortKey": 3
+    },
+    {
+      "_id": "fld_users",
+      "_type": "request_group",
+      "parentId": "wrk_opahours_backend",
+      "name": "Users",
+      "description": "",
+      "environment": {},
+      "environmentPropertyOrder": null,
+      "metaSortKey": 4
+    },
+    {
+      "_id": "req_health_check",
+      "_type": "request",
+      "parentId": "fld_health",
+      "name": "GET /health",
+      "method": "GET",
+      "url": "{{ _.base_url }}/health",
+      "body": {},
+      "parameters": [],
+      "headers": [],
+      "authentication": {},
+      "metaSortKey": 1,
+      "isPrivate": false,
+      "settingStoreCookies": true,
+      "settingSendCookies": true,
+      "settingDisableRenderRequestBody": false,
+      "settingEncodeUrl": true,
+      "settingRebuildPath": true,
+      "settingFollowRedirects": "global",
+      "settingRequestTimeout": 0
+    },
+    {
+      "_id": "req_docs",
+      "_type": "request",
+      "parentId": "fld_health",
+      "name": "GET /docs",
+      "method": "GET",
+      "url": "{{ _.base_url }}/docs",
+      "body": {},
+      "parameters": [],
+      "headers": [],
+      "authentication": {},
+      "metaSortKey": 2,
+      "isPrivate": false,
+      "settingStoreCookies": true,
+      "settingSendCookies": true,
+      "settingDisableRenderRequestBody": false,
+      "settingEncodeUrl": true,
+      "settingRebuildPath": true,
+      "settingFollowRedirects": "global",
+      "settingRequestTimeout": 0
+    },
+    {
+      "_id": "req_auth_login",
+      "_type": "request",
+      "parentId": "fld_auth",
+      "name": "POST /auth/login",
+      "method": "POST",
+      "url": "{{ _.base_url }}/auth/login",
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"email\": \"{{ _.email }}\",\n  \"password\": \"{{ _.password }}\"\n}"
+      },
+      "parameters": [],
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        }
+      ],
+      "authentication": {},
+      "metaSortKey": 1,
+      "isPrivate": false,
+      "settingStoreCookies": true,
+      "settingSendCookies": true,
+      "settingDisableRenderRequestBody": false,
+      "settingEncodeUrl": true,
+      "settingRebuildPath": true,
+      "settingFollowRedirects": "global",
+      "settingRequestTimeout": 0
+    },
+    {
+      "_id": "req_auth_refresh",
+      "_type": "request",
+      "parentId": "fld_auth",
+      "name": "POST /auth/refresh",
+      "method": "POST",
+      "url": "{{ _.base_url }}/auth/refresh",
+      "body": {},
+      "parameters": [],
+      "headers": [],
+      "authentication": {},
+      "metaSortKey": 2,
+      "isPrivate": false,
+      "settingStoreCookies": true,
+      "settingSendCookies": true,
+      "settingDisableRenderRequestBody": false,
+      "settingEncodeUrl": true,
+      "settingRebuildPath": true,
+      "settingFollowRedirects": "global",
+      "settingRequestTimeout": 0
+    },
+    {
+      "_id": "req_auth_me",
+      "_type": "request",
+      "parentId": "fld_auth",
+      "name": "GET /auth/me",
+      "method": "GET",
+      "url": "{{ _.base_url }}/auth/me",
+      "body": {},
+      "parameters": [],
+      "headers": [
+        {
+          "name": "Authorization",
+          "value": "Bearer {{ _.access_token }}"
+        }
+      ],
+      "authentication": {},
+      "metaSortKey": 3,
+      "isPrivate": false,
+      "settingStoreCookies": true,
+      "settingSendCookies": true,
+      "settingDisableRenderRequestBody": false,
+      "settingEncodeUrl": true,
+      "settingRebuildPath": true,
+      "settingFollowRedirects": "global",
+      "settingRequestTimeout": 0
+    },
+    {
+      "_id": "req_auth_logout",
+      "_type": "request",
+      "parentId": "fld_auth",
+      "name": "POST /auth/logout",
+      "method": "POST",
+      "url": "{{ _.base_url }}/auth/logout",
+      "body": {},
+      "parameters": [],
+      "headers": [],
+      "authentication": {},
+      "metaSortKey": 4,
+      "isPrivate": false,
+      "settingStoreCookies": true,
+      "settingSendCookies": true,
+      "settingDisableRenderRequestBody": false,
+      "settingEncodeUrl": true,
+      "settingRebuildPath": true,
+      "settingFollowRedirects": "global",
+      "settingRequestTimeout": 0
+    },
+    {
+      "_id": "req_users_create",
+      "_type": "request",
+      "parentId": "fld_users",
+      "name": "POST /users (bootstrap)",
+      "method": "POST",
+      "url": "{{ _.base_url }}/users",
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"name\": \"Admin\",\n  \"email\": \"{{ _.email }}\",\n  \"password\": \"{{ _.password }}\"\n}"
+      },
+      "parameters": [],
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        }
+      ],
+      "authentication": {},
+      "metaSortKey": 1,
+      "isPrivate": false,
+      "settingStoreCookies": true,
+      "settingSendCookies": true,
+      "settingDisableRenderRequestBody": false,
+      "settingEncodeUrl": true,
+      "settingRebuildPath": true,
+      "settingFollowRedirects": "global",
+      "settingRequestTimeout": 0
+    },
+    {
+      "_id": "req_users_list",
+      "_type": "request",
+      "parentId": "fld_users",
+      "name": "GET /users",
+      "method": "GET",
+      "url": "{{ _.base_url }}/users",
+      "body": {},
+      "parameters": [],
+      "headers": [
+        {
+          "name": "Authorization",
+          "value": "Bearer {{ _.access_token }}"
+        }
+      ],
+      "authentication": {},
+      "metaSortKey": 2,
+      "isPrivate": false,
+      "settingStoreCookies": true,
+      "settingSendCookies": true,
+      "settingDisableRenderRequestBody": false,
+      "settingEncodeUrl": true,
+      "settingRebuildPath": true,
+      "settingFollowRedirects": "global",
+      "settingRequestTimeout": 0
+    },
+    {
+      "_id": "req_users_get_by_id",
+      "_type": "request",
+      "parentId": "fld_users",
+      "name": "GET /users/:id",
+      "method": "GET",
+      "url": "{{ _.base_url }}/users/{{ _.user_id }}",
+      "body": {},
+      "parameters": [],
+      "headers": [
+        {
+          "name": "Authorization",
+          "value": "Bearer {{ _.access_token }}"
+        }
+      ],
+      "authentication": {},
+      "metaSortKey": 3,
+      "isPrivate": false,
+      "settingStoreCookies": true,
+      "settingSendCookies": true,
+      "settingDisableRenderRequestBody": false,
+      "settingEncodeUrl": true,
+      "settingRebuildPath": true,
+      "settingFollowRedirects": "global",
+      "settingRequestTimeout": 0
+    },
+    {
+      "_id": "req_users_update",
+      "_type": "request",
+      "parentId": "fld_users",
+      "name": "PUT /users/:id",
+      "method": "PUT",
+      "url": "{{ _.base_url }}/users/{{ _.user_id }}",
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"name\": \"Admin Updated\"\n}"
+      },
+      "parameters": [],
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        },
+        {
+          "name": "Authorization",
+          "value": "Bearer {{ _.access_token }}"
+        }
+      ],
+      "authentication": {},
+      "metaSortKey": 4,
+      "isPrivate": false,
+      "settingStoreCookies": true,
+      "settingSendCookies": true,
+      "settingDisableRenderRequestBody": false,
+      "settingEncodeUrl": true,
+      "settingRebuildPath": true,
+      "settingFollowRedirects": "global",
+      "settingRequestTimeout": 0
+    },
+    {
+      "_id": "req_users_delete",
+      "_type": "request",
+      "parentId": "fld_users",
+      "name": "DELETE /users/:id",
+      "method": "DELETE",
+      "url": "{{ _.base_url }}/users/{{ _.user_id }}",
+      "body": {},
+      "parameters": [],
+      "headers": [
+        {
+          "name": "Authorization",
+          "value": "Bearer {{ _.access_token }}"
+        }
+      ],
+      "authentication": {},
+      "metaSortKey": 5,
+      "isPrivate": false,
+      "settingStoreCookies": true,
+      "settingSendCookies": true,
+      "settingDisableRenderRequestBody": false,
+      "settingEncodeUrl": true,
+      "settingRebuildPath": true,
+      "settingFollowRedirects": "global",
+      "settingRequestTimeout": 0
+    }
+  ]
+}
