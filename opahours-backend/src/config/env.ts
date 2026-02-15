@@ -34,6 +34,28 @@ const envSchema = z.object({
     emptyToUndefined,
     z.string().min(1, "CORS_ORIGIN cannot be empty").default("*"),
   ),
+  LOG_LEVEL: z.preprocess(
+    emptyToUndefined,
+    z
+      .enum(["fatal", "error", "warn", "info", "debug", "trace", "silent"])
+      .default("info"),
+  ),
+  JWT_SECRET: z.preprocess(
+    emptyToUndefined,
+    z.string().min(8, "JWT_SECRET must have at least 8 characters"),
+  ),
+  REFRESH_TOKEN_SECRET: z.preprocess(
+    emptyToUndefined,
+    z.string().min(8, "REFRESH_TOKEN_SECRET must have at least 8 characters"),
+  ),
+  ACCESS_TOKEN_TTL_MINUTES: z.preprocess(
+    emptyToUndefined,
+    z.coerce.number().int().positive().default(15),
+  ),
+  REFRESH_TOKEN_TTL_DAYS: z.preprocess(
+    emptyToUndefined,
+    z.coerce.number().int().positive().default(30),
+  ),
 });
 
 const parsed = envSchema.safeParse(process.env);

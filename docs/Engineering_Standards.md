@@ -18,6 +18,7 @@ Objetivo: manter consistencia tecnica, reduzir retrabalho e facilitar escala.
 - `infrastructure` implementa ports e integra com DB/servicos externos.
 - `api` apenas traduz HTTP <-> caso de uso (sem regra de negocio relevante).
 - Organizar por modulo de negocio: `work-logs`, `invoices`, `clients`, `shared`.
+- Auth e users devem seguir modo single-user (sem members e sem roles).
 
 ## 3) Convencoes de codigo (TypeScript)
 
@@ -53,6 +54,8 @@ Objetivo: manter consistencia tecnica, reduzir retrabalho e facilitar escala.
 - Endpoints devem retornar erros estruturados (`code`, `message`, `details`).
 - `GET /health` obrigatorio e simples (sem regra de negocio).
 - Swagger/OpenAPI deve acompanhar o estado real da API.
+- Toda rota deve ser classificada em `config.access` como `public` ou `private`.
+- Rotas `private` devem usar `app.authenticate` no preHandler.
 
 ## 7) Testes
 
@@ -61,6 +64,8 @@ Objetivo: manter consistencia tecnica, reduzir retrabalho e facilitar escala.
 - Casos de uso com transacao: testes de integracao obrigatorios.
 - Todo bug corrigido deve ganhar teste de regressao.
 - Testes devem ser deterministas (sem dependencia de horario atual sem controle).
+- Toda implementacao ou ajuste deve ser validado localmente antes de marcar etapa como concluida.
+- Fluxo minimo de validacao: `npm run lint`, `npm run test` e, quando aplicavel, `npm run db:check`.
 
 ## 8) Observabilidade e operacao
 
@@ -75,6 +80,8 @@ Objetivo: manter consistencia tecnica, reduzir retrabalho e facilitar escala.
 - `.env` local nunca versionado; manter `.env.example` atualizado.
 - CORS restritivo fora de desenvolvimento.
 - Dependencias devem ser revisadas periodicamente.
+- Refresh token deve trafegar em cookie HttpOnly.
+- Access token deve trafegar como Bearer token no header `Authorization`.
 
 ## 10) Fluxo de trabalho (Git)
 
@@ -95,6 +102,7 @@ Uma entrega so e considerada pronta quando:
 - Validacoes e erros seguem padrao definido.
 - Testes relevantes foram adicionados/atualizados.
 - Lint e testes passam localmente.
+- Validacao tecnica da mudanca foi executada e registrada no log de alteracoes.
 - Documentacao de contrato/regra foi atualizada (quando aplicavel).
 
 ## 12) Evolucao deste documento

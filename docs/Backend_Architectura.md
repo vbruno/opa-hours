@@ -6,6 +6,9 @@
 
 * Framework HTTP: **Fastify**
 * Transações: **UnitOfWork**
+* Auth: JWT + refresh token em cookie HttpOnly
+* Acesso HTTP classificado por rota: `public` e `private`
+* Modo de conta: single-user (sem roles/members)
 
 ---
 
@@ -30,7 +33,7 @@
 
 3. **Infrastructure**
 
-* Drizzle (repositories + schema + migrations)
+* Drizzle (repositories + schema + migrations em `src/infrastructure/db/migrations`)
 * Auth (JWT + refresh)
 * PDF (Playwright)
 * Storage (container + volume)
@@ -50,6 +53,7 @@
 * `invoices`
 * `clients`
 * `auth`
+* `users`
 * `shared`
 
 ---

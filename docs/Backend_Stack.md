@@ -1,65 +1,57 @@
 # 🧱 Núcleo Tecnológico (Stack Oficial) — OpaHours Backend
 
-> Registro oficial das tecnologias do núcleo do backend (MVP).
+> Registro oficial das tecnologias e padrões já definidos para o backend (MVP).
 
-## Runtime
+## Runtime e framework
 
-* Node.js **LTS**
+* Node.js LTS
+* Fastify
+* TypeScript (ESM)
 
-## Linguagem / validação
+## Validação e configuração
 
-* TypeScript
-* Zod
+* Zod para validação de payloads HTTP
+* Zod para validação de ambiente em `src/config/env.ts`
+* dotenv para carregar `.env`
 
 ## Persistência
 
 * PostgreSQL
-* **Drizzle ORM**
+* Drizzle ORM
+* Migrações em `src/infrastructure/db/migrations`
+* `drizzle.config.ts` com `schema` em `src/infrastructure/db/schema`
 
-## Transações e concorrência
+## Auth e sessão
 
-* Usar transações nos casos críticos:
+* JWT access token (Bearer)
+* Refresh token em cookie HttpOnly (`refreshToken`)
+* Rotação de refresh token a cada refresh
+* Modo single-user: apenas 1 usuário ativo no sistema e 1 sessão de refresh por login
 
-  * gerar rascunho
-  * emitir invoice
-  * revision/versionamento
-* **Idempotency key** em ações sensíveis (ex: emitir invoice) — fase 2
+## Classificação de rotas
 
-## Auth
+* Rotas com metadado `config.access`:
+* `public` para endpoints sem autenticação
+* `private` para endpoints protegidos com `app.authenticate`
 
-* JWT + Refresh Token
+## Observabilidade e documentação
 
-## PDF (Invoice)
+* Pino para logging estruturado
+* Healthcheck: `GET /health`
+* Swagger/OpenAPI com Fastify Swagger + Swagger UI
 
-* Playwright (PDF via HTML/CSS)
+## Qualidade
 
-## Storage
-
-* PDFs (e futuros anexos) em **container dedicado** com volume persistente
-
-## Observabilidade e confiabilidade
-
-* Pino (logging)
-* Sentry (opcional)
-* Healthcheck endpoint: `GET /health`
-
-## Documentação de API
-
-* Swagger/OpenAPI (Fastify Swagger)
-
-## Configuração de ambiente
-
-* dotenv (carregar `.env`)
-* validação de env com Zod (recomendado)
-
-## Qualidade / Testes
-
-* Vitest (unit e integration)
+* Vitest (unit e API)
 * ESLint
 * Prettier
+* Build TypeScript (`npm run build`)
 
-## Infra mínima
+## Scripts operacionais definidos
 
-* Docker Compose (API + DB + storage)
-* Migrações rodando no deploy
-* Seeds para cliente padrão e prestador
+* `npm run dev`
+* `npm run db:check` para validar conexão com banco (`DB_CONNECTION_OK`)
+* `npm run db:generate`
+* `npm run db:migrate`
+* `npm run lint`
+* `npm run test`

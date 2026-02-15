@@ -41,6 +41,24 @@ Princípios:
 * **Alternativa:** detalhado (1 linha por lançamento)
 * rastreabilidade sempre via `invoice_lancamentos`
 
+### ✅ D4 — Autenticação e Sessão (MVP atual)
+
+* access token via Bearer token
+* refresh token via cookie HttpOnly
+* refresh com rotação de token
+* logout idempotente limpando cookie
+
+### ✅ D5 — Modelo de Usuário (MVP atual)
+
+* modo **single-user**
+* sem `member` e sem `role`
+* CRUD de usuário limitado à própria conta (self only)
+
+### ✅ D6 — Classificação de Rotas
+
+* toda rota deve declarar `config.access` como `public` ou `private`
+* rotas `private` usam `app.authenticate`
+
 ---
 
 ## 3) Invariantes (Regras que NUNCA podem quebrar)
@@ -225,6 +243,18 @@ Em uma transação:
 
 ## 8) API (Contratos sugeridos)
 
+### 8.0 Auth e Users (implementado no foundation)
+
+* `POST /auth/login` (public)
+* `POST /auth/refresh` (public)
+* `POST /auth/logout` (public)
+* `GET /auth/me` (private)
+* `POST /users` (public, bootstrap de primeiro usuário)
+* `GET /users` (private, retorna somente o usuário autenticado)
+* `GET /users/:id` (private, self only)
+* `PUT /users/:id` (private, self only)
+* `DELETE /users/:id` (private, self only)
+
 ### 8.1 Work Logs
 
 * `POST /work-logs`
@@ -278,9 +308,13 @@ Em uma transação:
 
 ### Base
 
-* [ ] Setup projeto (Node + TS)
-* [ ] Conexão PostgreSQL
-* [ ] Migrações / schema
+* [x] Setup projeto (Node + TS + Fastify)
+* [x] Conexão PostgreSQL
+* [x] Migrações / schema com Drizzle
+* [x] Validação de env com Zod
+* [x] Logging estruturado (Pino)
+* [x] Swagger/OpenAPI e `GET /health`
+* [x] Script de validação de conexão: `npm run db:check`
 
 ### Domínio
 
@@ -295,9 +329,12 @@ Em uma transação:
 
 ### API
 
-* [ ] Rotas + validação
-* [ ] Erros padronizados
-* [ ] Autenticação (quando entrar)
+* [x] Rotas + validação (base/auth/users)
+* [x] Erros padronizados
+* [x] Autenticação (JWT + refresh cookie)
+* [x] Classificação de acesso (`public` / `private`)
+* [ ] Rotas de `work-logs`
+* [ ] Rotas de `invoices`
 
 ### PDF
 
@@ -313,5 +350,8 @@ Em uma transação:
 
 ## 11) Log de Decisões (para ir atualizando)
 
-* [ ] (data) decisão X
-* [ ] (data) decisão Y
+* [x] 2026-02-10: base do backend concluída (env, db connection, health, swagger, cors, logger)
+* [x] 2026-02-10: criado comando `npm run db:check` para validar conexão com DB
+* [x] 2026-02-15: auth definido com refresh token em cookie HttpOnly
+* [x] 2026-02-15: sistema fechado em modo single-user sem roles/members
+* [x] 2026-02-15: rotas classificadas com `config.access` (`public` / `private`)

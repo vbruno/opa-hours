@@ -134,6 +134,24 @@ T8 — Correção / Versionamento
 
 6) Integração com API (contratos)
 
+Auth (modo atual)
+	•	POST /auth/login
+	•	POST /auth/refresh
+	•	POST /auth/logout
+	•	GET /auth/me
+	•	POST /users
+	•	GET /users
+	•	GET /users/:id
+	•	PUT /users/:id
+	•	DELETE /users/:id
+
+Regras de integração de sessão
+	•	Refresh token fica em cookie HttpOnly (frontend não lê cookie diretamente)
+	•	Access token fica em memória e vai no header Authorization
+	•	Requests de auth/refresh/logout devem enviar credentials (cookie)
+	•	Em 401 por expiração de access token, tentar refresh e repetir request original
+	•	Se refresh falhar, forçar logout local e redirecionar para login
+
 Work Logs
 	•	GET /work-logs
 	•	POST /work-logs

@@ -23,7 +23,16 @@ O sistema permite que uma **pessoa** registre horas trabalhadas diariamente e us
 
 * Domínio central: **Controle Individual de Horas Trabalhadas**
 * O sistema **não é orientado a projetos**.
+* O sistema opera em **modo single-user** (sem membros/equipe).
 * O faturamento é feito via **Invoice**, com rastreabilidade e versionamento.
+
+### 2.2 Autenticação no contexto atual
+
+* Login por email e senha.
+* Sessão com access token + refresh token.
+* Refresh token em cookie HttpOnly.
+* Endpoints de usuário existem para gestão da própria conta.
+* Não existe conceito de role/perfil na fase atual.
 
 ---
 
