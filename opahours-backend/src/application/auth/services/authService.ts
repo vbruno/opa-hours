@@ -35,6 +35,25 @@ const toUserView = (input: {
 const hashToken = (token: string): string =>
   createHash("sha256").update(token).digest("hex");
 
+const getUniqueConstraintName = (error: unknown): string | null => {
+  if (!error || typeof error !== "object") {
+    return null;
+  }
+
+  const candidate = error as {
+    code?: unknown;
+    constraint?: unknown;
+    cause?: { code?: unknown; constraint?: unknown };
+  };
+  const pgError = candidate.cause ?? candidate;
+
+  if (pgError.code === "23505" && typeof pgError.constraint === "string") {
+    return pgError.constraint;
+  }
+
+  return null;
+};
+
 export class AuthService {
   private readonly userRepository: AuthUserRepository;
   private readonly refreshTokenRepository: AuthRefreshTokenRepository;
@@ -66,12 +85,31 @@ export class AuthService {
       throw new AppError("AUTH_EMAIL_ALREADY_EXISTS", "Email already in use", 409);
     }
 
-    const created = await this.userRepository.create({
-      id: randomUUID(),
-      name: input.name,
-      email: input.email,
-      passwordHash: hashPassword(input.password),
-    });
+    let created;
+    try {
+      created = await this.userRepository.create({
+        id: randomUUID(),
+        name: input.name,
+        email: input.email,
+        passwordHash: hashPassword(input.password),
+      });
+    } catch (error) {
+      const uniqueConstraint = getUniqueConstraintName(error);
+
+      if (uniqueConstraint === "auth_users_singleton_guard_unique") {
+        throw new AppError(
+          "AUTH_SINGLE_USER_MODE",
+          "System supports a single user only",
+          409,
+        );
+      }
+
+      if (uniqueConstraint === "auth_users_email_unique") {
+        throw new AppError("AUTH_EMAIL_ALREADY_EXISTS", "Email already in use", 409);
+      }
+
+      throw error;
+    }
 
     if (input.isActive !== undefined && input.isActive !== created.isActive) {
       const updated = await this.userRepository.update(created.id, {
@@ -206,7 +244,7 @@ export class AuthService {
     const user = await this.userRepository.findById(refreshPayload.sub);
 
     if (!user || !user.isActive) {
-      throw new AppError("AUTH_USER_NOT_FOUND", "User not found or inactive", 404);
+      throw new AppError("AUTH_INVALID_REFRESH_TOKEN", "Invalid refresh token", 401);
     }
 
     await this.refreshTokenRepository.revokeById(tokenRecord.id);

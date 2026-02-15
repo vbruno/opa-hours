@@ -65,10 +65,11 @@ export const usersRoutes: FastifyPluginAsync = async (app) => {
   app.get(
     "/users",
     { preHandler: [app.authenticate], config: { access: "private" } },
-    async (request) =>
-      userService
-        .listUsers()
-        .then((users) => users.filter((user) => user.id === request.user!.sub)),
+    async (request) => {
+      const user = await userService.getUserById(request.user!.sub);
+
+      return [user];
+    },
   );
 
   app.get(

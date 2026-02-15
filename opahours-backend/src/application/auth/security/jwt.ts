@@ -1,4 +1,4 @@
-import { createHmac } from "node:crypto";
+import { createHmac, timingSafeEqual } from "node:crypto";
 
 export interface JwtClaims {
   [key: string]: unknown;
@@ -62,7 +62,13 @@ export const verifyJwt = (
 
     const expectedSignature = sign(`${encodedHeader}.${encodedPayload}`, secret);
 
-    if (expectedSignature !== encodedSignature) {
+    const expectedSignatureBytes = base64UrlDecode(expectedSignature);
+    const incomingSignatureBytes = base64UrlDecode(encodedSignature);
+
+    if (
+      expectedSignatureBytes.length !== incomingSignatureBytes.length ||
+      !timingSafeEqual(expectedSignatureBytes, incomingSignatureBytes)
+    ) {
       return null;
     }
 

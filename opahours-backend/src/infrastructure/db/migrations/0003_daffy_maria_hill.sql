@@ -1,0 +1,1 @@
+CREATE UNIQUE INDEX "auth_users_singleton_guard_unique" ON "auth_users" USING btree ((true));
