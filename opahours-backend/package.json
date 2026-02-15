@@ -11,13 +11,14 @@
     "dev": "tsx watch src/server.ts",
     "build": "tsc",
     "start": "node dist/server.js",
-    "db:check": "npm run build --silent && node dist/scripts/checkDb.js",
     "test": "vitest",
     "test:cov": "vitest --coverage",
     "lint": "eslint .",
     "format": "prettier -w .",
+    "db:check": "npm run build --silent && node dist/scripts/checkDb.js",
     "db:generate": "drizzle-kit generate",
-    "db:migrate": "drizzle-kit migrate"
+    "db:migrate": "drizzle-kit migrate",
+    "db:studio": "drizzle-kit studio"
   },
   "keywords": [],
   "author": "Bruno S. Velho",
@@ -36,7 +37,7 @@
   },
   "devDependencies": {
     "@eslint/js": "^9.39.2",
-    "@types/node": "^25.2.1",
+    "@types/node": "^25.2.3",
     "@types/supertest": "^6.0.3",
     "@vitest/coverage-v8": "^4.0.18",
     "drizzle-kit": "^0.31.8",
