@@ -4,12 +4,13 @@ import { z } from "zod";
 import { AuthService } from "../../application/auth/services/authService.js";
 import { env } from "../../config/env.js";
 import { AppError } from "../../application/shared/errors/appError.js";
+import { errorMessages } from "../../application/shared/errors/errorMessages.js";
 
 const authService = new AuthService();
 
 const loginBodySchema = z.object({
-  email: z.string().email(),
-  password: z.string().min(6),
+  email: z.string().trim().email().toLowerCase(),
+  password: z.string().min(8).max(72),
 });
 
 const REFRESH_COOKIE_NAME = "refreshToken";
@@ -75,7 +76,11 @@ export const authRoutes: FastifyPluginAsync = async (app) => {
 
     if (!refreshToken) {
       clearRefreshCookieOnReply(reply);
-      throw new AppError("AUTH_MISSING_REFRESH_TOKEN", "Missing refresh token", 401);
+      throw new AppError(
+        "AUTH_MISSING_REFRESH_TOKEN",
+        errorMessages.AUTH_MISSING_REFRESH_TOKEN,
+        401,
+      );
     }
 
     try {

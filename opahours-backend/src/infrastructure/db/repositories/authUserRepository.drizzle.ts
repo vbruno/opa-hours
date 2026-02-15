@@ -51,7 +51,7 @@ export class AuthUserRepository {
   public async create(input: CreateAuthUserInput): Promise<AuthUserRow> {
     const values: NewAuthUserRow = {
       id: input.id,
-      name: input.name,
+      name: input.name.trim(),
       email: input.email.toLowerCase(),
       passwordHash: input.passwordHash,
       isActive: true,
@@ -67,7 +67,7 @@ export class AuthUserRepository {
       updatedAt: new Date(),
     };
 
-    if (input.name !== undefined) values.name = input.name;
+    if (input.name !== undefined) values.name = input.name.trim();
     if (input.email !== undefined) values.email = input.email.toLowerCase();
     if (input.passwordHash !== undefined) values.passwordHash = input.passwordHash;
     if (input.isActive !== undefined) values.isActive = input.isActive;

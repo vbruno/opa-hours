@@ -36,6 +36,13 @@
       "when": 1771158964348,
       "tag": "0004_magenta_wallop",
       "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1771159234134,
+      "tag": "0005_sweet_squirrel_girl",
+      "breakpoints": true
     }
   ]
 }

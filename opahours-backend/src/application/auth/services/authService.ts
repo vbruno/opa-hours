@@ -4,6 +4,7 @@ import { env } from "../../../config/env.js";
 import { AuthRefreshTokenRepository } from "../../../infrastructure/db/repositories/authRefreshTokenRepository.drizzle.js";
 import { AuthUserRepository } from "../../../infrastructure/db/repositories/authUserRepository.drizzle.js";
 import { AppError } from "../../shared/errors/appError.js";
+import { errorMessages } from "../../shared/errors/errorMessages.js";
 import { signJwt, verifyJwt } from "../security/jwt.js";
 import { hashPassword, verifyPassword } from "../security/password.js";
 import type {
@@ -35,7 +36,10 @@ const toUserView = (input: {
 const hashToken = (token: string): string =>
   createHash("sha256").update(token).digest("hex");
 
-const getUniqueConstraintName = (error: unknown): string | null => {
+const normalizeEmail = (email: string): string => email.trim().toLowerCase();
+const normalizeName = (name: string): string => name.trim();
+
+const getConstraintName = (error: unknown): string | null => {
   if (!error || typeof error !== "object") {
     return null;
   }
@@ -47,11 +51,45 @@ const getUniqueConstraintName = (error: unknown): string | null => {
   };
   const pgError = candidate.cause ?? candidate;
 
-  if (pgError.code === "23505" && typeof pgError.constraint === "string") {
+  if (
+    (pgError.code === "23505" || pgError.code === "23514") &&
+    typeof pgError.constraint === "string"
+  ) {
     return pgError.constraint;
   }
 
   return null;
+};
+
+const mapAuthUserConstraintError = (error: unknown): AppError | null => {
+  const constraint = getConstraintName(error);
+
+  switch (constraint) {
+    case "auth_users_singleton_guard_unique":
+      return new AppError(
+        "AUTH_SINGLE_USER_MODE",
+        errorMessages.AUTH_SINGLE_USER_MODE,
+        409,
+      );
+    case "auth_users_email_unique":
+      return new AppError(
+        "AUTH_EMAIL_ALREADY_EXISTS",
+        errorMessages.AUTH_EMAIL_ALREADY_EXISTS,
+        409,
+      );
+    case "auth_users_name_min_len_check":
+      return new AppError("AUTH_INVALID_NAME", errorMessages.AUTH_INVALID_NAME, 400);
+    case "auth_users_email_lowercase_check":
+      return new AppError("AUTH_INVALID_EMAIL", errorMessages.AUTH_INVALID_EMAIL, 400, {
+        rule: "lowercase",
+      });
+    case "auth_users_email_format_check":
+      return new AppError("AUTH_INVALID_EMAIL", errorMessages.AUTH_INVALID_EMAIL, 400, {
+        rule: "format",
+      });
+    default:
+      return null;
+  }
 };
 
 export class AuthService {
@@ -74,38 +112,36 @@ export class AuthService {
     if (usersCount > 0) {
       throw new AppError(
         "AUTH_SINGLE_USER_MODE",
-        "System supports a single user only",
+        errorMessages.AUTH_SINGLE_USER_MODE,
         409,
       );
     }
 
-    const existing = await this.userRepository.findByEmail(input.email);
+    const normalizedEmail = normalizeEmail(input.email);
+    const normalizedName = normalizeName(input.name);
+    const existing = await this.userRepository.findByEmail(normalizedEmail);
 
     if (existing) {
-      throw new AppError("AUTH_EMAIL_ALREADY_EXISTS", "Email already in use", 409);
+      throw new AppError(
+        "AUTH_EMAIL_ALREADY_EXISTS",
+        errorMessages.AUTH_EMAIL_ALREADY_EXISTS,
+        409,
+      );
     }
 
     let created;
     try {
       created = await this.userRepository.create({
         id: randomUUID(),
-        name: input.name,
-        email: input.email,
+        name: normalizedName,
+        email: normalizedEmail,
         passwordHash: hashPassword(input.password),
       });
     } catch (error) {
-      const uniqueConstraint = getUniqueConstraintName(error);
+      const mapped = mapAuthUserConstraintError(error);
 
-      if (uniqueConstraint === "auth_users_singleton_guard_unique") {
-        throw new AppError(
-          "AUTH_SINGLE_USER_MODE",
-          "System supports a single user only",
-          409,
-        );
-      }
-
-      if (uniqueConstraint === "auth_users_email_unique") {
-        throw new AppError("AUTH_EMAIL_ALREADY_EXISTS", "Email already in use", 409);
+      if (mapped) {
+        throw mapped;
       }
 
       throw error;
@@ -117,7 +153,7 @@ export class AuthService {
       });
 
       if (!updated) {
-        throw new AppError("AUTH_USER_NOT_FOUND", "User not found", 404);
+        throw new AppError("AUTH_USER_NOT_FOUND", errorMessages.AUTH_USER_NOT_FOUND, 404);
       }
 
       return toUserView(updated);
@@ -136,7 +172,7 @@ export class AuthService {
     const user = await this.userRepository.findById(id);
 
     if (!user) {
-      throw new AppError("AUTH_USER_NOT_FOUND", "User not found", 404);
+      throw new AppError("AUTH_USER_NOT_FOUND", errorMessages.AUTH_USER_NOT_FOUND, 404);
     }
 
     return toUserView(user);
@@ -152,22 +188,45 @@ export class AuthService {
     },
   ): Promise<AuthUserView> {
     if (input.email) {
-      const existing = await this.userRepository.findByEmail(input.email);
+      const normalizedEmail = normalizeEmail(input.email);
+      const existing = await this.userRepository.findByEmail(normalizedEmail);
 
       if (existing && existing.id !== id) {
-        throw new AppError("AUTH_EMAIL_ALREADY_EXISTS", "Email already in use", 409);
+        throw new AppError(
+          "AUTH_EMAIL_ALREADY_EXISTS",
+          errorMessages.AUTH_EMAIL_ALREADY_EXISTS,
+          409,
+        );
       }
     }
 
-    const updated = await this.userRepository.update(id, {
-      name: input.name,
-      email: input.email,
-      isActive: input.isActive,
-      passwordHash: input.password ? hashPassword(input.password) : undefined,
-    });
+    const normalizedName = input.name !== undefined
+      ? normalizeName(input.name)
+      : undefined;
+    const normalizedEmail = input.email !== undefined
+      ? normalizeEmail(input.email)
+      : undefined;
+
+    let updated;
+    try {
+      updated = await this.userRepository.update(id, {
+        name: normalizedName,
+        email: normalizedEmail,
+        isActive: input.isActive,
+        passwordHash: input.password ? hashPassword(input.password) : undefined,
+      });
+    } catch (error) {
+      const mapped = mapAuthUserConstraintError(error);
+
+      if (mapped) {
+        throw mapped;
+      }
+
+      throw error;
+    }
 
     if (!updated) {
-      throw new AppError("AUTH_USER_NOT_FOUND", "User not found", 404);
+      throw new AppError("AUTH_USER_NOT_FOUND", errorMessages.AUTH_USER_NOT_FOUND, 404);
     }
 
     return toUserView(updated);
@@ -177,7 +236,7 @@ export class AuthService {
     const deleted = await this.userRepository.delete(id);
 
     if (!deleted) {
-      throw new AppError("AUTH_USER_NOT_FOUND", "User not found", 404);
+      throw new AppError("AUTH_USER_NOT_FOUND", errorMessages.AUTH_USER_NOT_FOUND, 404);
     }
 
     await this.refreshTokenRepository.revokeAllByUserId(id);
@@ -191,14 +250,18 @@ export class AuthService {
     email: string;
     password: string;
   }): Promise<{ user: AuthUserView; tokens: TokenPair }> {
-    const user = await this.userRepository.findByEmail(input.email);
+    const user = await this.userRepository.findByEmail(normalizeEmail(input.email));
 
     if (!user || !verifyPassword(input.password, user.passwordHash)) {
-      throw new AppError("AUTH_INVALID_CREDENTIALS", "Invalid credentials", 401);
+      throw new AppError(
+        "AUTH_INVALID_CREDENTIALS",
+        errorMessages.AUTH_INVALID_CREDENTIALS,
+        401,
+      );
     }
 
     if (!user.isActive) {
-      throw new AppError("AUTH_USER_INACTIVE", "User is inactive", 403);
+      throw new AppError("AUTH_USER_INACTIVE", errorMessages.AUTH_USER_INACTIVE, 403);
     }
 
     // Single-user mode: keep only one active refresh session per login.
@@ -218,7 +281,11 @@ export class AuthService {
     const payload = verifyJwt(input.refreshToken, env.REFRESH_TOKEN_SECRET);
 
     if (!payload || payload.type !== "refresh") {
-      throw new AppError("AUTH_INVALID_REFRESH_TOKEN", "Invalid refresh token", 401);
+      throw new AppError(
+        "AUTH_INVALID_REFRESH_TOKEN",
+        errorMessages.AUTH_INVALID_REFRESH_TOKEN,
+        401,
+      );
     }
 
     const refreshPayload = payload as unknown as RefreshTokenPayload;
@@ -227,24 +294,40 @@ export class AuthService {
     );
 
     if (!tokenRecord) {
-      throw new AppError("AUTH_INVALID_REFRESH_TOKEN", "Invalid refresh token", 401);
+      throw new AppError(
+        "AUTH_INVALID_REFRESH_TOKEN",
+        errorMessages.AUTH_INVALID_REFRESH_TOKEN,
+        401,
+      );
     }
 
     if (tokenRecord.expiresAt.getTime() <= Date.now()) {
       await this.refreshTokenRepository.revokeById(tokenRecord.id);
-      throw new AppError("AUTH_REFRESH_TOKEN_EXPIRED", "Refresh token expired", 401);
+      throw new AppError(
+        "AUTH_REFRESH_TOKEN_EXPIRED",
+        errorMessages.AUTH_REFRESH_TOKEN_EXPIRED,
+        401,
+      );
     }
 
     const incomingHash = hashToken(input.refreshToken);
 
     if (incomingHash !== tokenRecord.tokenHash) {
-      throw new AppError("AUTH_INVALID_REFRESH_TOKEN", "Invalid refresh token", 401);
+      throw new AppError(
+        "AUTH_INVALID_REFRESH_TOKEN",
+        errorMessages.AUTH_INVALID_REFRESH_TOKEN,
+        401,
+      );
     }
 
     const user = await this.userRepository.findById(refreshPayload.sub);
 
     if (!user || !user.isActive) {
-      throw new AppError("AUTH_INVALID_REFRESH_TOKEN", "Invalid refresh token", 401);
+      throw new AppError(
+        "AUTH_INVALID_REFRESH_TOKEN",
+        errorMessages.AUTH_INVALID_REFRESH_TOKEN,
+        401,
+      );
     }
 
     await this.refreshTokenRepository.revokeById(tokenRecord.id);
@@ -261,7 +344,11 @@ export class AuthService {
     const payload = verifyJwt(input.refreshToken, env.REFRESH_TOKEN_SECRET);
 
     if (!payload || payload.type !== "refresh") {
-      throw new AppError("AUTH_INVALID_REFRESH_TOKEN", "Invalid refresh token", 401);
+      throw new AppError(
+        "AUTH_INVALID_REFRESH_TOKEN",
+        errorMessages.AUTH_INVALID_REFRESH_TOKEN,
+        401,
+      );
     }
 
     const refreshPayload = payload as unknown as RefreshTokenPayload;
@@ -273,7 +360,11 @@ export class AuthService {
     const payload = verifyJwt(token, env.JWT_SECRET);
 
     if (!payload || payload.type !== "access") {
-      throw new AppError("AUTH_INVALID_ACCESS_TOKEN", "Invalid access token", 401);
+      throw new AppError(
+        "AUTH_INVALID_ACCESS_TOKEN",
+        errorMessages.AUTH_INVALID_ACCESS_TOKEN,
+        401,
+      );
     }
 
     return payload as unknown as AccessTokenPayload;

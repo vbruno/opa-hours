@@ -3,6 +3,7 @@ import fastifyPlugin from "fastify-plugin";
 
 import { AuthService } from "../../application/auth/services/authService.js";
 import { AppError } from "../../application/shared/errors/appError.js";
+import { errorMessages } from "../../application/shared/errors/errorMessages.js";
 
 const authService = new AuthService();
 
@@ -15,7 +16,7 @@ const authPluginHandler: FastifyPluginAsync = async (app) => {
     if (!authorization || !authorization.startsWith("Bearer ")) {
       throw new AppError(
         "AUTH_MISSING_ACCESS_TOKEN",
-        "Missing bearer access token",
+        errorMessages.AUTH_MISSING_ACCESS_TOKEN,
         401,
       );
     }

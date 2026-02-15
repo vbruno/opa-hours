@@ -2,22 +2,27 @@ import type { FastifyPluginAsync, FastifyReply, FastifyRequest } from "fastify";
 import { z } from "zod";
 
 import { AppError } from "../../application/shared/errors/appError.js";
+import { errorMessages } from "../../application/shared/errors/errorMessages.js";
 import { UserService } from "../../application/users/services/userService.js";
 
 const userService = new UserService();
 
+const nameSchema = z.string().trim().min(2).max(120);
+const emailSchema = z.string().trim().email().toLowerCase();
+const passwordSchema = z.string().min(8).max(72);
+
 const createUserBodySchema = z.object({
-  name: z.string().min(2),
-  email: z.string().email(),
-  password: z.string().min(6),
+  name: nameSchema,
+  email: emailSchema,
+  password: passwordSchema,
   isActive: z.boolean().optional(),
 });
 
 const updateUserBodySchema = z
   .object({
-    name: z.string().min(2).optional(),
-    email: z.string().email().optional(),
-    password: z.string().min(6).optional(),
+    name: nameSchema.optional(),
+    email: emailSchema.optional(),
+    password: passwordSchema.optional(),
     isActive: z.boolean().optional(),
   })
   .refine((value) => Object.keys(value).length > 0, {
@@ -32,7 +37,7 @@ const ensureSelf = (request: FastifyRequest, targetUserId: string): void => {
   if (!request.user || request.user.sub !== targetUserId) {
     throw new AppError(
       "AUTH_FORBIDDEN",
-      "You can only manage your own user account",
+      errorMessages.AUTH_FORBIDDEN,
       403,
     );
   }
@@ -49,7 +54,7 @@ export const usersRoutes: FastifyPluginAsync = async (app) => {
       if (usersCount > 0) {
         throw new AppError(
           "AUTH_SINGLE_USER_MODE",
-          "System supports a single user only",
+          errorMessages.AUTH_SINGLE_USER_MODE,
           409,
         );
       }

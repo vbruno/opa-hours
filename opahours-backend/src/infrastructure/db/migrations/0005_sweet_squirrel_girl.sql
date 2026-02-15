@@ -1,0 +1,3 @@
+ALTER TABLE "auth_users" ADD CONSTRAINT "auth_users_name_min_len_check" CHECK (char_length(trim("auth_users"."name")) >= 2);--> statement-breakpoint
+ALTER TABLE "auth_users" ADD CONSTRAINT "auth_users_email_lowercase_check" CHECK ("auth_users"."email" = lower("auth_users"."email"));--> statement-breakpoint
+ALTER TABLE "auth_users" ADD CONSTRAINT "auth_users_email_format_check" CHECK (position('@' in "auth_users"."email") > 1);
