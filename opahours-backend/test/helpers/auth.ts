@@ -1,5 +1,9 @@
 import type { FastifyInstance } from "fastify";
 
+type TestApp = {
+  inject: FastifyInstance["inject"];
+};
+
 type BootstrapUserPayload = {
   name?: string;
   email?: string;
@@ -21,7 +25,7 @@ export const toCookieHeader = (setCookie: string | string[] | undefined): string
 };
 
 export const bootstrapUser = async (
-  app: FastifyInstance,
+  app: TestApp,
   payload?: BootstrapUserPayload,
 ) => {
   return app.inject({
@@ -37,7 +41,7 @@ export const bootstrapUser = async (
 };
 
 export const loginUser = async (
-  app: FastifyInstance,
+  app: TestApp,
   payload?: LoginPayload,
 ) => {
   return app.inject({
@@ -51,7 +55,7 @@ export const loginUser = async (
 };
 
 export const seedAuthSession = async (
-  app: FastifyInstance,
+  app: TestApp,
   payload?: BootstrapUserPayload,
 ) => {
   const createUser = await bootstrapUser(app, payload);
