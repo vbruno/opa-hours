@@ -46,11 +46,22 @@ describe.sequential("Users integration (test DB)", () => {
     const second = await bootstrapUser(app!, {
       name: "Second",
       email: "second@example.com",
-      password: "12345678",
+      password: "Second@123",
     });
 
     expect(second.statusCode).toBe(409);
     expect(second.json().code).toBe("AUTH_SINGLE_USER_MODE");
+  });
+
+  it("returns VALIDATION_ERROR for weak password on user bootstrap", async () => {
+    const response = await bootstrapUser(app!, {
+      name: "Admin",
+      email: "admin@example.com",
+      password: "12345678",
+    });
+
+    expect(response.statusCode).toBe(400);
+    expect(response.json().code).toBe("VALIDATION_ERROR");
   });
 
   it("returns AUTH_MISSING_ACCESS_TOKEN on GET /users without bearer", async () => {

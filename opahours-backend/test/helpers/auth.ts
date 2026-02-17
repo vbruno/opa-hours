@@ -34,7 +34,7 @@ export const bootstrapUser = async (
     payload: {
       name: payload?.name ?? "Admin",
       email: payload?.email ?? "admin@example.com",
-      password: payload?.password ?? "12345678",
+      password: payload?.password ?? "Admin@123",
       ...(payload?.isActive !== undefined ? { isActive: payload.isActive } : {}),
     },
   });
@@ -49,7 +49,7 @@ export const loginUser = async (
     url: "/auth/login",
     payload: {
       email: payload?.email ?? "admin@example.com",
-      password: payload?.password ?? "12345678",
+      password: payload?.password ?? "Admin@123",
     },
   });
 };

@@ -9,7 +9,25 @@ const userService = new UserService();
 
 const nameSchema = z.string().trim().min(2).max(120);
 const emailSchema = z.string().trim().email().toLowerCase();
-const passwordSchema = z.string().min(8).max(72);
+const PASSWORD_POLICY_REGEX = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^A-Za-z0-9]).+$/;
+const PASSWORD_POLICY_DESCRIPTION =
+  "At least 8 chars with uppercase, lowercase, number and special character";
+const PASSWORD_POLICY_PATTERN = "^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)(?=.*[^A-Za-z0-9]).+$";
+const passwordSchema = z
+  .string()
+  .min(8)
+  .max(72)
+  .regex(
+    PASSWORD_POLICY_REGEX,
+    "Password must contain uppercase, lowercase, number and special character",
+  );
+const passwordSwaggerSchema = {
+  type: "string",
+  minLength: 8,
+  maxLength: 72,
+  pattern: PASSWORD_POLICY_PATTERN,
+  description: PASSWORD_POLICY_DESCRIPTION,
+};
 
 const createUserBodySchema = z.object({
   name: nameSchema,
@@ -95,7 +113,7 @@ export const usersRoutes: FastifyPluginAsync = async (app) => {
           properties: {
             name: { type: "string", minLength: 2, maxLength: 120 },
             email: { type: "string", format: "email" },
-            password: { type: "string", minLength: 8, maxLength: 72 },
+            password: passwordSwaggerSchema,
             isActive: { type: "boolean", default: true },
           },
         },
@@ -206,7 +224,7 @@ export const usersRoutes: FastifyPluginAsync = async (app) => {
           properties: {
             name: { type: "string", minLength: 2, maxLength: 120 },
             email: { type: "string", format: "email" },
-            password: { type: "string", minLength: 8, maxLength: 72 },
+            password: passwordSwaggerSchema,
             isActive: { type: "boolean" },
           },
         },
