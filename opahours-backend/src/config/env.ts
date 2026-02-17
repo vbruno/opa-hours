@@ -30,6 +30,13 @@ const envSchema = z.object({
       .min(1, "DATABASE_URL is required")
       .url("DATABASE_URL must be a valid URL"),
   ),
+  DATABASE_URL_TEST: z.preprocess(
+    emptyToUndefined,
+    z
+      .string()
+      .url("DATABASE_URL_TEST must be a valid URL")
+      .optional(),
+  ),
   CORS_ORIGIN: z.preprocess(
     emptyToUndefined,
     z.string().min(1, "CORS_ORIGIN cannot be empty").default("*"),

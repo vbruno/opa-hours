@@ -1,6 +1,13 @@
-import "dotenv/config";
+import { config as loadDotenv } from "dotenv";
+import { dirname, resolve } from "node:path";
+import { fileURLToPath } from "node:url";
 
 import { defineConfig } from "drizzle-kit";
+
+const currentFilePath = fileURLToPath(import.meta.url);
+const currentDir = dirname(currentFilePath);
+
+loadDotenv({ path: resolve(currentDir, ".env") });
 
 const migrationsDatabaseUrl = process.env.DATABASE_URL_MIGRATIONS ?? process.env.DATABASE_URL;
 

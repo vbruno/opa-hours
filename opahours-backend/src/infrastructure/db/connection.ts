@@ -3,8 +3,22 @@ import { Pool } from "pg";
 
 import { env } from "../../config/env.js";
 
+const getDatabaseUrl = (): string => {
+  if (env.NODE_ENV === "test") {
+    if (!env.DATABASE_URL_TEST) {
+      throw new Error(
+        "DATABASE_URL_TEST is required when NODE_ENV=test.",
+      );
+    }
+
+    return env.DATABASE_URL_TEST;
+  }
+
+  return env.DATABASE_URL;
+};
+
 const pool = new Pool({
-  connectionString: env.DATABASE_URL,
+  connectionString: getDatabaseUrl(),
   max: 10,
   idleTimeoutMillis: 30_000,
   connectionTimeoutMillis: 5_000,
