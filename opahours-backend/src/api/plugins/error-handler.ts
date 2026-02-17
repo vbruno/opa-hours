@@ -13,6 +13,29 @@ const toValidationDetails = (error: ZodError) => ({
   })),
 });
 
+const toAjvValidationDetails = (error: {
+  validation?: Array<{
+    keyword?: string;
+    message?: string;
+    instancePath?: string;
+    params?: { missingProperty?: string };
+  }>;
+}) => ({
+  issues: (error.validation ?? []).map((issue) => {
+    const pathFromInstance = issue.instancePath
+      ? issue.instancePath.replace(/^\//, "").replace(/\//g, ".")
+      : null;
+    const missingPath = issue.params?.missingProperty ?? null;
+    const path = pathFromInstance || missingPath;
+
+    return {
+      code: issue.keyword ?? "validation",
+      message: issue.message ?? "Invalid value",
+      path,
+    };
+  }),
+});
+
 const errorHandlerPluginHandler: FastifyPluginAsync = async (app) => {
   app.setErrorHandler((error, request, reply) => {
     if (error instanceof AppError) {
@@ -29,6 +52,26 @@ const errorHandlerPluginHandler: FastifyPluginAsync = async (app) => {
         code: "VALIDATION_ERROR",
         message: errorMessages.VALIDATION_ERROR,
         details: toValidationDetails(error),
+        requestId: request.id,
+      });
+    }
+
+    if (
+      typeof error === "object" &&
+      error !== null &&
+      "validation" in error
+    ) {
+      return reply.status(400).send({
+        code: "VALIDATION_ERROR",
+        message: errorMessages.VALIDATION_ERROR,
+        details: toAjvValidationDetails(error as {
+          validation?: Array<{
+            keyword?: string;
+            message?: string;
+            instancePath?: string;
+            params?: { missingProperty?: string };
+          }>;
+        }),
         requestId: request.id,
       });
     }

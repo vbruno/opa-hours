@@ -8,12 +8,13 @@ import {
   it,
 } from "vitest";
 
-import { buildServer } from "../../src/api/server.js";
+import { buildServer } from "../../../src/api/server.js";
 import {
   closeTestDatabase,
   resetAuthTables,
   setupTestDatabase,
-} from "../helpers/testDatabase.js";
+} from "../../helpers/testDatabase.js";
+import { seedAuthSession } from "../../helpers/auth.js";
 
 describe.sequential("Auth integration (test DB)", () => {
   let app: ReturnType<typeof buildServer> | null = null;
@@ -39,40 +40,21 @@ describe.sequential("Auth integration (test DB)", () => {
   });
 
   it("creates user, logs in, refreshes, reads /auth/me and logs out", async () => {
-    const createUser = await app!.inject({
-      method: "POST",
-      url: "/users",
-      payload: {
-        name: "Admin",
-        email: "admin@example.com",
-        password: "12345678",
-      },
-    });
-
+    const { createUser, login, accessToken, refreshCookie } =
+      await seedAuthSession(app!);
     expect(createUser.statusCode).toBe(201);
     const createdUser = createUser.json();
     expect(createdUser.email).toBe("admin@example.com");
 
-    const login = await app!.inject({
-      method: "POST",
-      url: "/auth/login",
-      payload: {
-        email: "admin@example.com",
-        password: "12345678",
-      },
-    });
-
     expect(login.statusCode).toBe(200);
-    const loginBody = login.json();
-    expect(loginBody.accessToken).toEqual(expect.any(String));
-    const loginCookie = login.headers["set-cookie"];
-    expect(loginCookie).toBeDefined();
+    expect(accessToken).toEqual(expect.any(String));
+    expect(refreshCookie).not.toBe("");
 
     const refresh = await app!.inject({
       method: "POST",
       url: "/auth/refresh",
       headers: {
-        cookie: Array.isArray(loginCookie) ? loginCookie.join("; ") : loginCookie!,
+        cookie: refreshCookie,
       },
     });
 
@@ -91,14 +73,14 @@ describe.sequential("Auth integration (test DB)", () => {
     expect(me.statusCode).toBe(200);
     expect(me.json().email).toBe("admin@example.com");
 
-    const refreshCookie = refresh.headers["set-cookie"] ?? loginCookie;
+    const refreshedCookie = refresh.headers["set-cookie"] ?? refreshCookie;
     const logout = await app!.inject({
       method: "POST",
       url: "/auth/logout",
       headers: {
-        cookie: Array.isArray(refreshCookie)
-          ? refreshCookie.join("; ")
-          : refreshCookie!,
+        cookie: Array.isArray(refreshedCookie)
+          ? refreshedCookie.join("; ")
+          : refreshedCookie,
       },
     });
 
@@ -108,9 +90,9 @@ describe.sequential("Auth integration (test DB)", () => {
       method: "POST",
       url: "/auth/refresh",
       headers: {
-        cookie: Array.isArray(refreshCookie)
-          ? refreshCookie.join("; ")
-          : refreshCookie!,
+        cookie: Array.isArray(refreshedCookie)
+          ? refreshedCookie.join("; ")
+          : refreshedCookie,
       },
     });
 

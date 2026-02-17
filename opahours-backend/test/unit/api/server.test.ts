@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, it } from "vitest";
 
-import { buildServer } from "../../src/api/server.js";
+import { buildServer } from "../../../src/api/server.js";
 
 describe("API bootstrap", () => {
   let app: ReturnType<typeof buildServer> | null = null;
