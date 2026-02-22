@@ -1,6 +1,7 @@
 import type { Duration } from "../valueObjects/duration.js";
 import type { HourlyRate } from "../valueObjects/hourlyRate.js";
 import type { WorkPeriod } from "../valueObjects/workPeriod.js";
+import { throwWorkLogDomainError } from "../errors/workLogDomainErrors.js";
 
 export const calculatePayableDuration = (
   period: WorkPeriod,
@@ -24,7 +25,7 @@ export const calculateAdditionalTotal = (
 ): number => {
   for (const addition of additions) {
     if (!Number.isInteger(addition.cents)) {
-      throw new Error("WORK_LOG_INVALID_ADDITIONAL_AMOUNT");
+      throwWorkLogDomainError("WORK_LOG_INVALID_ADDITIONAL_AMOUNT");
     }
   }
 
@@ -40,7 +41,7 @@ export const calculateDailyTotalCents = (
   const total = baseTotal + additionalTotal;
 
   if (total < 0) {
-    throw new Error("WORK_LOG_INVALID_DAILY_TOTAL");
+    throwWorkLogDomainError("WORK_LOG_INVALID_DAILY_TOTAL");
   }
 
   return total;

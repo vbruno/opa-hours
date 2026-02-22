@@ -1,9 +1,11 @@
+import { throwWorkLogDomainError } from "../errors/workLogDomainErrors.js";
+
 export class HourlyRate {
   private constructor(private readonly centsValue: number) {}
 
   public static fromCents(cents: number): HourlyRate {
     if (!Number.isFinite(cents) || !Number.isInteger(cents) || cents <= 0) {
-      throw new Error("WORK_LOG_INVALID_HOURLY_RATE");
+      throwWorkLogDomainError("WORK_LOG_INVALID_HOURLY_RATE");
     }
 
     return new HourlyRate(cents);

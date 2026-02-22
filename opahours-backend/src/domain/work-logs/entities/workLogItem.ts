@@ -2,6 +2,7 @@ import { calculateItemTotalCents, calculatePayableDuration } from "../rules/calc
 import { Duration } from "../valueObjects/duration.js";
 import { HourlyRate } from "../valueObjects/hourlyRate.js";
 import { WorkPeriod } from "../valueObjects/workPeriod.js";
+import { throwWorkLogDomainError } from "../errors/workLogDomainErrors.js";
 
 export class WorkLogItem {
   public readonly payableDuration: Duration;
@@ -27,11 +28,11 @@ export class WorkLogItem {
     hourlyRateCents: number;
   }): WorkLogItem {
     if (!input.id.trim()) {
-      throw new Error("WORK_LOG_ITEM_INVALID_ID");
+      throwWorkLogDomainError("WORK_LOG_ITEM_INVALID_ID");
     }
 
     if (!input.description.trim()) {
-      throw new Error("WORK_LOG_ITEM_INVALID_DESCRIPTION");
+      throwWorkLogDomainError("WORK_LOG_ITEM_INVALID_DESCRIPTION");
     }
 
     const period = WorkPeriod.create({

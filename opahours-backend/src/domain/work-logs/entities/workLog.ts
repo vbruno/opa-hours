@@ -1,5 +1,6 @@
 import { calculateDailyTotalCents } from "../rules/calculators.js";
 import type { WorkLogItem } from "./workLogItem.js";
+import { throwWorkLogDomainError } from "../errors/workLogDomainErrors.js";
 
 export type WorkLogStatus = "draft" | "linked" | "invoiced";
 export type WorkLogAdditional = {
@@ -29,15 +30,15 @@ export class WorkLog {
     status?: WorkLogStatus;
   }): WorkLog {
     if (!input.id.trim()) {
-      throw new Error("WORK_LOG_INVALID_ID");
+      throwWorkLogDomainError("WORK_LOG_INVALID_ID");
     }
 
     if (!input.personId.trim()) {
-      throw new Error("WORK_LOG_INVALID_PERSON_ID");
+      throwWorkLogDomainError("WORK_LOG_INVALID_PERSON_ID");
     }
 
     if (!/^\d{4}-\d{2}-\d{2}$/.test(input.workDate)) {
-      throw new Error("WORK_LOG_INVALID_DATE");
+      throwWorkLogDomainError("WORK_LOG_INVALID_DATE");
     }
 
     return new WorkLog(
@@ -69,7 +70,7 @@ export class WorkLog {
 
     const alreadyExists = this.entries.some((entry) => entry.id === item.id);
     if (alreadyExists) {
-      throw new Error("WORK_LOG_ITEM_ALREADY_EXISTS");
+      throwWorkLogDomainError("WORK_LOG_ITEM_ALREADY_EXISTS");
     }
 
     this.entries.push(item);
@@ -80,7 +81,7 @@ export class WorkLog {
 
     const index = this.entries.findIndex((entry) => entry.id === itemId);
     if (index === -1) {
-      throw new Error("WORK_LOG_ITEM_NOT_FOUND");
+      throwWorkLogDomainError("WORK_LOG_ITEM_NOT_FOUND");
     }
 
     this.entries.splice(index, 1);
@@ -90,20 +91,20 @@ export class WorkLog {
     this.ensureMutable();
 
     if (!input.id.trim()) {
-      throw new Error("WORK_LOG_ADDITIONAL_INVALID_ID");
+      throwWorkLogDomainError("WORK_LOG_ADDITIONAL_INVALID_ID");
     }
 
     if (!input.description.trim()) {
-      throw new Error("WORK_LOG_ADDITIONAL_INVALID_DESCRIPTION");
+      throwWorkLogDomainError("WORK_LOG_ADDITIONAL_INVALID_DESCRIPTION");
     }
 
     if (!Number.isInteger(input.cents)) {
-      throw new Error("WORK_LOG_INVALID_ADDITIONAL_AMOUNT");
+      throwWorkLogDomainError("WORK_LOG_INVALID_ADDITIONAL_AMOUNT");
     }
 
     const alreadyExists = this.additions.some((item) => item.id === input.id);
     if (alreadyExists) {
-      throw new Error("WORK_LOG_ADDITIONAL_ALREADY_EXISTS");
+      throwWorkLogDomainError("WORK_LOG_ADDITIONAL_ALREADY_EXISTS");
     }
 
     this.additions.push({
@@ -118,7 +119,7 @@ export class WorkLog {
 
     const index = this.additions.findIndex((item) => item.id === additionalId);
     if (index === -1) {
-      throw new Error("WORK_LOG_ADDITIONAL_NOT_FOUND");
+      throwWorkLogDomainError("WORK_LOG_ADDITIONAL_NOT_FOUND");
     }
 
     this.additions.splice(index, 1);
@@ -126,7 +127,7 @@ export class WorkLog {
 
   public markLinked(): void {
     if (this.statusValue !== "draft") {
-      throw new Error("WORK_LOG_INVALID_STATUS_TRANSITION");
+      throwWorkLogDomainError("WORK_LOG_INVALID_STATUS_TRANSITION");
     }
 
     this.statusValue = "linked";
@@ -134,7 +135,7 @@ export class WorkLog {
 
   public markInvoiced(): void {
     if (this.statusValue !== "linked") {
-      throw new Error("WORK_LOG_INVALID_STATUS_TRANSITION");
+      throwWorkLogDomainError("WORK_LOG_INVALID_STATUS_TRANSITION");
     }
 
     this.statusValue = "invoiced";
@@ -142,7 +143,7 @@ export class WorkLog {
 
   private ensureMutable(): void {
     if (this.statusValue === "invoiced") {
-      throw new Error("WORK_LOG_LOCKED");
+      throwWorkLogDomainError("WORK_LOG_LOCKED");
     }
   }
 }
