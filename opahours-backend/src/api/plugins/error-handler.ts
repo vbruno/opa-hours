@@ -4,6 +4,11 @@ import { ZodError } from "zod";
 
 import { AppError } from "../../application/shared/errors/appError.js";
 import { errorMessages } from "../../application/shared/errors/errorMessages.js";
+import {
+  getWorkLogDomainErrorStatusCode,
+  WorkLogDomainError,
+  workLogDomainErrorMessages,
+} from "../../domain/work-logs/errors/workLogDomainErrors.js";
 
 const toValidationDetails = (error: ZodError) => ({
   issues: error.issues.map((issue) => ({
@@ -52,6 +57,15 @@ const errorHandlerPluginHandler: FastifyPluginAsync = async (app) => {
         code: "VALIDATION_ERROR",
         message: errorMessages.VALIDATION_ERROR,
         details: toValidationDetails(error),
+        requestId: request.id,
+      });
+    }
+
+    if (error instanceof WorkLogDomainError) {
+      return reply.status(getWorkLogDomainErrorStatusCode(error.code)).send({
+        code: error.code,
+        message: workLogDomainErrorMessages[error.code],
+        details: error.details ?? null,
         requestId: request.id,
       });
     }

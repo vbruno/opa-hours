@@ -27,9 +27,8 @@ const envSchema = z.object({
     emptyToUndefined,
     z
       .string()
-      .min(1, "DATABASE_URL is required")
       .url("DATABASE_URL must be a valid URL"),
-  ),
+  ).optional(),
   DATABASE_URL_TEST: z.preprocess(
     emptyToUndefined,
     z
@@ -87,4 +86,24 @@ if (!parsed.success) {
   );
 }
 
-export const env = parsed.data;
+const envData = parsed.data;
+
+if (envData.NODE_ENV === "test" && !envData.DATABASE_URL_TEST) {
+  throw new Error(
+    [
+      "Invalid environment configuration.",
+      "DATABASE_URL_TEST is required when NODE_ENV=test.",
+    ].join("\n"),
+  );
+}
+
+if (envData.NODE_ENV !== "test" && !envData.DATABASE_URL) {
+  throw new Error(
+    [
+      "Invalid environment configuration.",
+      "DATABASE_URL is required when NODE_ENV is development/production.",
+    ].join("\n"),
+  );
+}
+
+export const env = envData;

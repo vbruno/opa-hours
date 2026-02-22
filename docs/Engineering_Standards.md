@@ -36,6 +36,12 @@ Objetivo: manter consistencia tecnica, reduzir retrabalho e facilitar escala.
 - Erros internos inesperados nao devem vazar detalhes sensiveis para cliente.
 - Definir mapeamento padrao de erro para resposta HTTP.
 - Mensagens de erro devem ser centralizadas em catalogo unico (evitar string solta em servico/rota).
+- `code` deve ser estavel e orientado a contrato de frontend; `message` deve ser texto limpo para exibicao/log, sem parser de codigo.
+- Para modulos de dominio (ex: `work-logs`), centralizar no proprio modulo:
+- catalogo de mensagens por `code`
+- tipo de erro de dominio
+- mapeamento `code -> status HTTP`
+- O `error-handler` global apenas aplica o padrao de resposta (`code`, `message`, `details`, `requestId`) e usa o mapeamento central.
 
 ## 5) Banco de dados e transacoes
 

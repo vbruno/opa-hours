@@ -25,6 +25,31 @@ export const workLogDomainErrorMessages = {
 
 export type WorkLogDomainErrorCode = keyof typeof workLogDomainErrorMessages;
 
+const workLogDomainErrorStatusByCode: Record<WorkLogDomainErrorCode, number> = {
+  WORK_LOG_INVALID_ID: 400,
+  WORK_LOG_INVALID_PERSON_ID: 400,
+  WORK_LOG_INVALID_DATE: 400,
+  WORK_LOG_ITEM_ALREADY_EXISTS: 409,
+  WORK_LOG_ITEM_NOT_FOUND: 404,
+  WORK_LOG_ADDITIONAL_INVALID_ID: 400,
+  WORK_LOG_ADDITIONAL_INVALID_DESCRIPTION: 400,
+  WORK_LOG_INVALID_ADDITIONAL_AMOUNT: 400,
+  WORK_LOG_ADDITIONAL_ALREADY_EXISTS: 409,
+  WORK_LOG_ADDITIONAL_NOT_FOUND: 404,
+  WORK_LOG_INVALID_STATUS_TRANSITION: 409,
+  WORK_LOG_LOCKED: 409,
+  WORK_LOG_ITEM_INVALID_ID: 400,
+  WORK_LOG_ITEM_INVALID_DESCRIPTION: 400,
+  WORK_LOG_INVALID_DURATION: 400,
+  WORK_LOG_INVALID_BREAK_DURATION: 400,
+  WORK_LOG_INVALID_HOURLY_RATE: 400,
+  WORK_LOG_INVALID_PERIOD_TIMEZONE: 400,
+  WORK_LOG_INVALID_PERIOD: 400,
+  WORK_LOG_INVALID_PERIOD_PRECISION: 400,
+  WORK_LOG_DURATION_EXCEEDS_LIMIT: 400,
+  WORK_LOG_INVALID_DAILY_TOTAL: 400,
+};
+
 export class WorkLogDomainError extends Error {
   public readonly code: WorkLogDomainErrorCode;
   public readonly details: Record<string, unknown> | null;
@@ -39,6 +64,10 @@ export class WorkLogDomainError extends Error {
     this.details = details;
   }
 }
+
+export const getWorkLogDomainErrorStatusCode = (
+  code: WorkLogDomainErrorCode,
+): number => workLogDomainErrorStatusByCode[code];
 
 export const throwWorkLogDomainError = (
   code: WorkLogDomainErrorCode,

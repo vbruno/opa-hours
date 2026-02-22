@@ -64,6 +64,20 @@ Princípios:
 * payload de erro da API padronizado com `code`, `message`, `details`, `requestId`
 * validação de payload retorna `VALIDATION_ERROR` com `details.issues[]`
 * mensagens de erro centralizadas em catálogo único (`errorMessages.ts`)
+* `code` é o identificador estável para frontend e logs; `message` é texto legível (sem necessidade de parse de código)
+* erros de domínio devem manter catálogo próprio de mensagens e mapeamento HTTP centralizado por código
+* o plugin global de erro deve apenas traduzir erro tipado -> resposta padrão (sem regra de status espalhada em rotas)
+
+Exemplo de payload:
+
+```json
+{
+  "code": "WORK_LOG_INVALID_DATE",
+  "message": "Work date must follow YYYY-MM-DD format",
+  "details": null,
+  "requestId": "req-123"
+}
+```
 
 ---
 

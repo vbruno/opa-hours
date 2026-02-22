@@ -5,13 +5,11 @@ import { env } from "../../config/env.js";
 
 const getDatabaseUrl = (): string => {
   if (env.NODE_ENV === "test") {
-    if (!env.DATABASE_URL_TEST) {
-      throw new Error(
-        "DATABASE_URL_TEST is required when NODE_ENV=test.",
-      );
-    }
+    return env.DATABASE_URL_TEST!;
+  }
 
-    return env.DATABASE_URL_TEST;
+  if (!env.DATABASE_URL) {
+    throw new Error("DATABASE_URL is required when NODE_ENV is not test.");
   }
 
   return env.DATABASE_URL;

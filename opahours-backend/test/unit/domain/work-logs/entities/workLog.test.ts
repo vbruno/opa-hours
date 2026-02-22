@@ -51,6 +51,14 @@ describe("workLog entity", () => {
         workDate: "22-02-2026",
       }),
     ).toThrowError("WORK_LOG_INVALID_DATE");
+
+    expect(() =>
+      WorkLog.create({
+        id: "work-log-1",
+        personId: "person-1",
+        workDate: "2026-02-30",
+      }),
+    ).toThrowError("WORK_LOG_INVALID_DATE");
   });
 
   it("adds and removes items while mutable", () => {

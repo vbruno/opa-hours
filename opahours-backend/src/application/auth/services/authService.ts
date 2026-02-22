@@ -1,4 +1,4 @@
-import { createHash, randomUUID } from "node:crypto";
+import { createHash, randomUUID, timingSafeEqual } from "node:crypto";
 
 import { env } from "../../../config/env.js";
 import { AuthRefreshTokenRepository } from "../../../infrastructure/db/repositories/authRefreshTokenRepository.drizzle.js";
@@ -35,6 +35,23 @@ const toUserView = (input: {
 
 const hashToken = (token: string): string =>
   createHash("sha256").update(token).digest("hex");
+
+const isHex = (value: string): boolean => /^[a-f0-9]+$/i.test(value) && value.length % 2 === 0;
+
+const safeHashEquals = (left: string, right: string): boolean => {
+  if (!isHex(left) || !isHex(right)) {
+    return false;
+  }
+
+  const leftBytes = Buffer.from(left, "hex");
+  const rightBytes = Buffer.from(right, "hex");
+
+  if (leftBytes.length !== rightBytes.length) {
+    return false;
+  }
+
+  return timingSafeEqual(leftBytes, rightBytes);
+};
 
 const normalizeEmail = (email: string): string => email.trim().toLowerCase();
 const normalizeName = (name: string): string => name.trim();
@@ -312,7 +329,7 @@ export class AuthService {
 
     const incomingHash = hashToken(input.refreshToken);
 
-    if (incomingHash !== tokenRecord.tokenHash) {
+    if (!safeHashEquals(incomingHash, tokenRecord.tokenHash)) {
       throw new AppError(
         "AUTH_INVALID_REFRESH_TOKEN",
         errorMessages.AUTH_INVALID_REFRESH_TOKEN,
