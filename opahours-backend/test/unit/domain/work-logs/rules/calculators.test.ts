@@ -1,6 +1,8 @@
 import { describe, expect, it } from "vitest";
 
 import {
+  calculateAdditionalTotal,
+  calculateDailyTotalCents,
   calculateItemTotalCents,
   calculatePayableDuration,
   calculateWorkLogTotal,
@@ -40,6 +42,15 @@ describe("work-log calculators", () => {
     expect(total).toBe(15000);
   });
 
+  it("rounds item total to nearest cent for fractional-hour values", () => {
+    const total = calculateItemTotalCents(
+      Duration.fromMinutes(1),
+      HourlyRate.fromCents(10000),
+    );
+
+    expect(total).toBe(167);
+  });
+
   it("calculates work-log total from items", () => {
     const total = calculateWorkLogTotal([
       { totalCents: 15000 },
@@ -47,5 +58,33 @@ describe("work-log calculators", () => {
     ]);
 
     expect(total).toBe(35000);
+  });
+
+  it("calculates additional totals with positive and negative values", () => {
+    const total = calculateAdditionalTotal([
+      { cents: 5000 },
+      { cents: -1500 },
+      { cents: 250 },
+    ]);
+
+    expect(total).toBe(3750);
+  });
+
+  it("calculates daily total from items and additions", () => {
+    const total = calculateDailyTotalCents(
+      [{ totalCents: 30000 }, { totalCents: 15000 }],
+      [{ cents: 2000 }, { cents: -500 }],
+    );
+
+    expect(total).toBe(46500);
+  });
+
+  it("rejects daily total lower than zero", () => {
+    expect(() =>
+      calculateDailyTotalCents(
+        [{ totalCents: 1000 }],
+        [{ cents: -2000 }],
+      ),
+    ).toThrowError("WORK_LOG_INVALID_DAILY_TOTAL");
   });
 });

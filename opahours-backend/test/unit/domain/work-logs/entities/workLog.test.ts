@@ -33,6 +33,32 @@ describe("workLog entity", () => {
     expect(workLog.items).toHaveLength(1);
   });
 
+  it("applies daily additions and discounts in total", () => {
+    const workLog = WorkLog.create({
+      id: "work-log-1",
+      personId: "person-1",
+      workDate: "2026-02-22",
+    });
+
+    const item = createItem("item-1");
+    workLog.addItem(item);
+    workLog.addAdditional({
+      id: "add-1",
+      description: "Night shift extra",
+      cents: 5000,
+    });
+    workLog.addAdditional({
+      id: "add-2",
+      description: "Adjustment discount",
+      cents: -1000,
+    });
+
+    expect(workLog.totalCents).toBe(item.totalCents + 4000);
+
+    workLog.removeAdditional("add-2");
+    expect(workLog.totalCents).toBe(item.totalCents + 5000);
+  });
+
   it("locks modifications after status is invoiced", () => {
     const workLog = WorkLog.create({
       id: "work-log-1",
@@ -44,6 +70,10 @@ describe("workLog entity", () => {
 
     expect(() => workLog.addItem(createItem("item-1"))).toThrowError("WORK_LOG_LOCKED");
     expect(() => workLog.removeItem("item-1")).toThrowError("WORK_LOG_LOCKED");
+    expect(() =>
+      workLog.addAdditional({ id: "add-1", description: "Extra", cents: 1000 }),
+    ).toThrowError("WORK_LOG_LOCKED");
+    expect(() => workLog.removeAdditional("add-1")).toThrowError("WORK_LOG_LOCKED");
   });
 
   it("blocks duplicate item ids", () => {
@@ -58,5 +88,19 @@ describe("workLog entity", () => {
     expect(() => workLog.addItem(createItem("item-1"))).toThrowError(
       "WORK_LOG_ITEM_ALREADY_EXISTS",
     );
+  });
+
+  it("blocks duplicate addition ids", () => {
+    const workLog = WorkLog.create({
+      id: "work-log-1",
+      personId: "person-1",
+      workDate: "2026-02-22",
+    });
+
+    workLog.addAdditional({ id: "add-1", description: "Extra", cents: 1000 });
+
+    expect(() =>
+      workLog.addAdditional({ id: "add-1", description: "Another", cents: 2000 }),
+    ).toThrowError("WORK_LOG_ADDITIONAL_ALREADY_EXISTS");
   });
 });

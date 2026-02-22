@@ -1,10 +1,16 @@
-import { calculateWorkLogTotal } from "../rules/calculators.js";
+import { calculateDailyTotalCents } from "../rules/calculators.js";
 import type { WorkLogItem } from "./workLogItem.js";
 
 export type WorkLogStatus = "draft" | "linked" | "invoiced";
+export type WorkLogAdditional = {
+  id: string;
+  description: string;
+  cents: number;
+};
 
 export class WorkLog {
   private readonly entries: WorkLogItem[] = [];
+  private readonly additions: WorkLogAdditional[] = [];
   private statusValue: WorkLogStatus;
 
   private constructor(
@@ -50,8 +56,12 @@ export class WorkLog {
     return this.entries;
   }
 
+  public get additionals(): readonly WorkLogAdditional[] {
+    return this.additions;
+  }
+
   public get totalCents(): number {
-    return calculateWorkLogTotal(this.entries);
+    return calculateDailyTotalCents(this.entries, this.additions);
   }
 
   public addItem(item: WorkLogItem): void {
@@ -74,6 +84,44 @@ export class WorkLog {
     }
 
     this.entries.splice(index, 1);
+  }
+
+  public addAdditional(input: WorkLogAdditional): void {
+    this.ensureMutable();
+
+    if (!input.id.trim()) {
+      throw new Error("WORK_LOG_ADDITIONAL_INVALID_ID");
+    }
+
+    if (!input.description.trim()) {
+      throw new Error("WORK_LOG_ADDITIONAL_INVALID_DESCRIPTION");
+    }
+
+    if (!Number.isInteger(input.cents)) {
+      throw new Error("WORK_LOG_INVALID_ADDITIONAL_AMOUNT");
+    }
+
+    const alreadyExists = this.additions.some((item) => item.id === input.id);
+    if (alreadyExists) {
+      throw new Error("WORK_LOG_ADDITIONAL_ALREADY_EXISTS");
+    }
+
+    this.additions.push({
+      id: input.id,
+      description: input.description.trim(),
+      cents: input.cents,
+    });
+  }
+
+  public removeAdditional(additionalId: string): void {
+    this.ensureMutable();
+
+    const index = this.additions.findIndex((item) => item.id === additionalId);
+    if (index === -1) {
+      throw new Error("WORK_LOG_ADDITIONAL_NOT_FOUND");
+    }
+
+    this.additions.splice(index, 1);
   }
 
   public markLinked(): void {
