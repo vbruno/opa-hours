@@ -125,7 +125,7 @@ export class WorkLog {
   }
 
   public markLinked(): void {
-    if (this.statusValue === "invoiced") {
+    if (this.statusValue !== "draft") {
       throw new Error("WORK_LOG_INVALID_STATUS_TRANSITION");
     }
 
@@ -133,6 +133,10 @@ export class WorkLog {
   }
 
   public markInvoiced(): void {
+    if (this.statusValue !== "linked") {
+      throw new Error("WORK_LOG_INVALID_STATUS_TRANSITION");
+    }
+
     this.statusValue = "invoiced";
   }
 

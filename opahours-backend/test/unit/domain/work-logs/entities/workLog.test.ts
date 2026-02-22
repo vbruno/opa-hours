@@ -66,6 +66,7 @@ describe("workLog entity", () => {
       workDate: "2026-02-22",
     });
 
+    workLog.markLinked();
     workLog.markInvoiced();
 
     expect(() => workLog.addItem(createItem("item-1"))).toThrowError("WORK_LOG_LOCKED");
@@ -102,5 +103,27 @@ describe("workLog entity", () => {
     expect(() =>
       workLog.addAdditional({ id: "add-1", description: "Another", cents: 2000 }),
     ).toThrowError("WORK_LOG_ADDITIONAL_ALREADY_EXISTS");
+  });
+
+  it("allows only draft -> linked -> invoiced status flow", () => {
+    const workLog = WorkLog.create({
+      id: "work-log-1",
+      personId: "person-1",
+      workDate: "2026-02-22",
+    });
+
+    expect(() => workLog.markInvoiced()).toThrowError(
+      "WORK_LOG_INVALID_STATUS_TRANSITION",
+    );
+
+    workLog.markLinked();
+    workLog.markInvoiced();
+
+    expect(() => workLog.markLinked()).toThrowError(
+      "WORK_LOG_INVALID_STATUS_TRANSITION",
+    );
+    expect(() => workLog.markInvoiced()).toThrowError(
+      "WORK_LOG_INVALID_STATUS_TRANSITION",
+    );
   });
 });
