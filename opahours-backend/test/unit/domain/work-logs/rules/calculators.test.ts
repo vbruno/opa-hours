@@ -70,6 +70,12 @@ describe("work-log calculators", () => {
     expect(total).toBe(3750);
   });
 
+  it("rejects additional amount when not integer", () => {
+    expect(() =>
+      calculateAdditionalTotal([{ cents: 1000.1 }]),
+    ).toThrowError("WORK_LOG_INVALID_ADDITIONAL_AMOUNT");
+  });
+
   it("calculates daily total from items and additions", () => {
     const total = calculateDailyTotalCents(
       [{ totalCents: 30000 }, { totalCents: 15000 }],

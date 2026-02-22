@@ -14,6 +14,45 @@ const createItem = (id: string) =>
   });
 
 describe("workLog entity", () => {
+  it("creates work-log with valid base fields", () => {
+    const workLog = WorkLog.create({
+      id: "work-log-1",
+      personId: "person-1",
+      workDate: "2026-02-22",
+    });
+
+    expect(workLog.id).toBe("work-log-1");
+    expect(workLog.personId).toBe("person-1");
+    expect(workLog.workDate).toBe("2026-02-22");
+    expect(workLog.status).toBe("draft");
+  });
+
+  it("rejects invalid base fields", () => {
+    expect(() =>
+      WorkLog.create({
+        id: "   ",
+        personId: "person-1",
+        workDate: "2026-02-22",
+      }),
+    ).toThrowError("WORK_LOG_INVALID_ID");
+
+    expect(() =>
+      WorkLog.create({
+        id: "work-log-1",
+        personId: "   ",
+        workDate: "2026-02-22",
+      }),
+    ).toThrowError("WORK_LOG_INVALID_PERSON_ID");
+
+    expect(() =>
+      WorkLog.create({
+        id: "work-log-1",
+        personId: "person-1",
+        workDate: "22-02-2026",
+      }),
+    ).toThrowError("WORK_LOG_INVALID_DATE");
+  });
+
   it("adds and removes items while mutable", () => {
     const workLog = WorkLog.create({
       id: "work-log-1",
@@ -31,6 +70,16 @@ describe("workLog entity", () => {
 
     workLog.removeItem("item-1");
     expect(workLog.items).toHaveLength(1);
+  });
+
+  it("throws when removing non-existing item", () => {
+    const workLog = WorkLog.create({
+      id: "work-log-1",
+      personId: "person-1",
+      workDate: "2026-02-22",
+    });
+
+    expect(() => workLog.removeItem("item-x")).toThrowError("WORK_LOG_ITEM_NOT_FOUND");
   });
 
   it("applies daily additions and discounts in total", () => {
@@ -103,6 +152,38 @@ describe("workLog entity", () => {
     expect(() =>
       workLog.addAdditional({ id: "add-1", description: "Another", cents: 2000 }),
     ).toThrowError("WORK_LOG_ADDITIONAL_ALREADY_EXISTS");
+  });
+
+  it("validates additional payload fields", () => {
+    const workLog = WorkLog.create({
+      id: "work-log-1",
+      personId: "person-1",
+      workDate: "2026-02-22",
+    });
+
+    expect(() =>
+      workLog.addAdditional({ id: "   ", description: "Extra", cents: 1000 }),
+    ).toThrowError("WORK_LOG_ADDITIONAL_INVALID_ID");
+
+    expect(() =>
+      workLog.addAdditional({ id: "add-1", description: "   ", cents: 1000 }),
+    ).toThrowError("WORK_LOG_ADDITIONAL_INVALID_DESCRIPTION");
+
+    expect(() =>
+      workLog.addAdditional({ id: "add-1", description: "Extra", cents: 1000.5 }),
+    ).toThrowError("WORK_LOG_INVALID_ADDITIONAL_AMOUNT");
+  });
+
+  it("throws when removing non-existing additional", () => {
+    const workLog = WorkLog.create({
+      id: "work-log-1",
+      personId: "person-1",
+      workDate: "2026-02-22",
+    });
+
+    expect(() => workLog.removeAdditional("add-x")).toThrowError(
+      "WORK_LOG_ADDITIONAL_NOT_FOUND",
+    );
   });
 
   it("allows only draft -> linked -> invoiced status flow", () => {
