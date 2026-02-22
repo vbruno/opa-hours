@@ -1,5 +1,5 @@
 import { calculateWorkLogTotal } from "../rules/calculators.js";
-import { WorkLogItem } from "./workLogItem.js";
+import type { WorkLogItem } from "./workLogItem.js";
 
 export type WorkLogStatus = "draft" | "linked" | "invoiced";
 

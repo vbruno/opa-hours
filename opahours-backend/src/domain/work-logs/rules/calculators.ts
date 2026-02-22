@@ -1,6 +1,6 @@
-import { Duration } from "../valueObjects/duration.js";
-import { HourlyRate } from "../valueObjects/hourlyRate.js";
-import { WorkPeriod } from "../valueObjects/workPeriod.js";
+import type { Duration } from "../valueObjects/duration.js";
+import type { HourlyRate } from "../valueObjects/hourlyRate.js";
+import type { WorkPeriod } from "../valueObjects/workPeriod.js";
 
 export const calculatePayableDuration = (
   period: WorkPeriod,

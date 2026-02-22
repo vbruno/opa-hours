@@ -1,5 +1,21 @@
 import { Duration } from "./duration.js";
 
+const MAX_PERIOD_MINUTES = 24 * 60;
+const MINUTE_IN_MILLISECONDS = 1000 * 60;
+
+const parseDateInput = (value: Date | string): Date => {
+  if (value instanceof Date) {
+    return value;
+  }
+
+  const hasTimezone = /(?:Z|[+-]\d{2}:\d{2})$/.test(value);
+  if (!hasTimezone) {
+    throw new Error("WORK_LOG_INVALID_PERIOD_TIMEZONE");
+  }
+
+  return new Date(value);
+};
+
 export class WorkPeriod {
   private constructor(
     public readonly startAt: Date,
@@ -7,8 +23,8 @@ export class WorkPeriod {
   ) {}
 
   public static create(input: { startAt: Date | string; endAt: Date | string }): WorkPeriod {
-    const startAt = input.startAt instanceof Date ? input.startAt : new Date(input.startAt);
-    const endAt = input.endAt instanceof Date ? input.endAt : new Date(input.endAt);
+    const startAt = parseDateInput(input.startAt);
+    const endAt = parseDateInput(input.endAt);
 
     if (Number.isNaN(startAt.getTime()) || Number.isNaN(endAt.getTime())) {
       throw new Error("WORK_LOG_INVALID_PERIOD");
@@ -18,13 +34,21 @@ export class WorkPeriod {
       throw new Error("WORK_LOG_INVALID_PERIOD");
     }
 
+    const diffMs = endAt.getTime() - startAt.getTime();
+    if (diffMs % MINUTE_IN_MILLISECONDS !== 0) {
+      throw new Error("WORK_LOG_INVALID_PERIOD_PRECISION");
+    }
+
+    const diffMinutes = diffMs / MINUTE_IN_MILLISECONDS;
+    if (diffMinutes > MAX_PERIOD_MINUTES) {
+      throw new Error("WORK_LOG_DURATION_EXCEEDS_LIMIT");
+    }
+
     return new WorkPeriod(startAt, endAt);
   }
 
   public getWorkedDuration(): Duration {
-    const diffMinutes = Math.floor(
-      (this.endAt.getTime() - this.startAt.getTime()) / (1000 * 60),
-    );
+    const diffMinutes = (this.endAt.getTime() - this.startAt.getTime()) / MINUTE_IN_MILLISECONDS;
 
     return Duration.fromMinutes(diffMinutes);
   }
