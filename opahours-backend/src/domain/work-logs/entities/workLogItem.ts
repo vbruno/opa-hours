@@ -1,4 +1,4 @@
-import { calculateItemTotalCents, calculatePayableDuration } from "../rules/calculators.js";
+import { calculateItemTotalCents, calculatePayableDuration, validateAdditionalAmount } from "../rules/calculators.js";
 import { Duration } from "../valueObjects/duration.js";
 import { HourlyRate } from "../valueObjects/hourlyRate.js";
 import { WorkPeriod } from "../valueObjects/workPeriod.js";
@@ -10,29 +10,42 @@ export class WorkLogItem {
 
   private constructor(
     public readonly id: string,
-    public readonly description: string,
+    public readonly location: string,
     public readonly period: WorkPeriod,
     public readonly breakDuration: Duration,
     public readonly hourlyRate: HourlyRate,
+    public readonly additionalCents: number,
+    public readonly notes: string | null,
   ) {
     this.payableDuration = calculatePayableDuration(period, breakDuration);
-    this.totalCents = calculateItemTotalCents(this.payableDuration, hourlyRate);
+    this.totalCents = calculateItemTotalCents(
+      this.payableDuration,
+      hourlyRate,
+      additionalCents,
+    );
   }
 
   public static create(input: {
     id: string;
-    description: string;
+    location: string;
     startAt: Date | string;
     endAt: Date | string;
     breakMinutes: number;
     hourlyRateCents: number;
+    additionalCents?: number;
+    notes?: string | null;
   }): WorkLogItem {
     if (!input.id.trim()) {
       throwWorkLogDomainError("WORK_LOG_ITEM_INVALID_ID");
     }
 
-    if (!input.description.trim()) {
-      throwWorkLogDomainError("WORK_LOG_ITEM_INVALID_DESCRIPTION");
+    if (!input.location.trim()) {
+      throwWorkLogDomainError("WORK_LOG_ITEM_INVALID_LOCATION");
+    }
+
+    const normalizedNotes = input.notes?.trim() ?? null;
+    if (normalizedNotes !== null && normalizedNotes.length > 1000) {
+      throwWorkLogDomainError("WORK_LOG_ITEM_INVALID_NOTES");
     }
 
     const period = WorkPeriod.create({
@@ -42,13 +55,24 @@ export class WorkLogItem {
 
     const breakDuration = Duration.fromMinutes(input.breakMinutes);
     const hourlyRate = HourlyRate.fromCents(input.hourlyRateCents);
+    const additionalCents = validateAdditionalAmount(input.additionalCents ?? 0);
 
     return new WorkLogItem(
       input.id,
-      input.description.trim(),
+      input.location.trim(),
       period,
       breakDuration,
       hourlyRate,
+      additionalCents,
+      normalizedNotes,
     );
+  }
+
+  public get referenceDate(): string {
+    return this.period.startAt.toISOString().slice(0, 10);
+  }
+
+  public get isSingleDay(): boolean {
+    return this.referenceDate === this.period.endAt.toISOString().slice(0, 10);
   }
 }

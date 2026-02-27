@@ -71,35 +71,31 @@ Representa um **dia de trabalho**.
 **Atributos**
 
 * Data
-* Hora de início
-* Hora de fim
-* Break (min)
-* Duração total (min) — tempo líquido do dia
-* Valor/hora
 * Adicional do dia (opcional)
-* Valor total do dia
 * Observações (opcional)
 * Status de faturamento
+* Itens do dia (0..N em `draft`; 1..N para avançar o lançamento)
+* Campos consolidados derivados dos itens: hora de início, hora de fim, break total, duração total e valor total
 
 **Status de faturamento**
 
-* **Aberto** → ainda não vinculado a invoice
-* **Vinculado** → associado a invoice em rascunho
-* **Faturado** → pertence a invoice emitida
+* **Draft** → ainda não vinculado a invoice
+* **Linked** → associado a invoice em rascunho
+* **Invoiced** → pertence a invoice emitida
 
 **Regras de negócio (invariantes)**
 
-* Não pode existir mais de um lançamento por pessoa na mesma data
+* Não pode existir mais de um lançamento por pessoa + cliente na mesma data
 * Break é obrigatório (mínimo zero)
-* Duração total = (hora fim − hora início) − break
-* Um lançamento **não pode ser faturado mais de uma vez**
-* Lançamento **faturado** não pode ser editado financeiramente
+* Campos consolidados do lançamento são derivados dos itens
+* Um lançamento **não pode ser invoiced mais de uma vez**
+* Lançamento **invoiced** não pode ser editado financeiramente
+* `draft` pode existir sem item temporariamente, mas `linked`/`invoiced` exige ao menos 1 item
+* Todo item deve pertencer ao mesmo `workDate` do lançamento
 
 **Cálculo (regra principal)**
 
-* **Valor total do dia** = (duração total × valor/hora) + adicional
-
-  * adicional pode existir no nível do dia e/ou dos itens
+* **Valor total do dia** = Σ(total dos itens) + adicional do dia
 
 ---
 
@@ -110,14 +106,20 @@ Quando houver trabalho em **dois locais ou mais no mesmo dia**, os detalhes por 
 **Atributos**
 
 * Endereço / Local
-* Duração alocada (min)
+* Hora de início
+* Hora de fim
+* Break (min)
+* Duração alocada (min) — derivada do período líquido
+* Valor/hora
 * Adicional do item (opcional)
 * Observações (opcional)
 
 **Regras**
 
-* Um LançamentoHora pode ter **1..N** itens
-* Se houver múltiplos itens, a soma das durações dos itens deve ser igual à **duração total do lançamento**
+* Um LançamentoHora pode ter **0..N** itens enquanto estiver em `draft`
+* Cada item calcula sua própria duração líquida
+* O lançamento consolida os totais do dia a partir dos itens
+* Cada item deve permanecer dentro do mesmo dia do lançamento
 
 ---
 
@@ -262,7 +264,7 @@ Representa uma linha da invoice.
 
 **Regras**
 
-* Apenas lançamentos **não faturados** podem ser selecionados
+* Apenas lançamentos **não invoiced** podem ser selecionados
 * Um lançamento só pode pertencer a **uma invoice**
 * Invoice armazena **snapshot** dos valores no momento da geração
 
@@ -280,7 +282,7 @@ Representa uma linha da invoice.
 
 **Regras**
 
-* Seleciona apenas lançamentos elegíveis (não faturados)
+* Seleciona apenas lançamentos elegíveis (não invoiced)
 * Cria invoice em **Rascunho**
 
 #### b) Por Local
@@ -310,7 +312,7 @@ Representa uma linha da invoice.
 2. Confirma emissão
 3. Sistema gera PDF, bloqueia edição da versão
 4. Status muda para **Emitida**
-5. Lançamentos vinculados passam para **Faturado**
+5. Lançamentos vinculados passam para **Invoiced**
 
 ### 7.2 Envio e Pagamento
 
@@ -419,28 +421,31 @@ O GST é **opcional e configurável pelo usuário**.
 
 * id
 * pessoa_id
-* cliente_id (recomendado)
+* cliente_id (obrigatorio)
 * data
-* hora_inicio
-* hora_fim
-* break_min
-* duracao_min
-* valor_hora
+* hora_inicio (derivado)
+* hora_fim (derivado)
+* break_min (derivado)
+* duracao_min (derivado)
 * adicional_dia (opcional)
-* valor_total
+* valor_total (derivado)
 * observacoes
-* status_faturamento (aberto|vinculado|faturado)
+* status_faturamento (draft|linked|invoiced)
 
 **Constraint**
 
-* unique(pessoa_id, data)
+* unique(pessoa_id, cliente_id, data)
 
 ### Tabela: lancamentos_itens
 
 * id
 * lancamento_id
 * endereco
-* duracao_min
+* start_at
+* end_at
+* break_min
+* duracao_min (derivado)
+* valor_hora
 * adicional_item (opcional)
 * observacoes (opcional)
 
@@ -493,7 +498,7 @@ O GST é **opcional e configurável pelo usuário**.
 * Uma invoice contém lançamentos de **um único cliente**
 * Invoice emitida não é alterada; novas versões substituem
 * Um lançamento só pode estar em **uma invoice**
-* Lançamento faturado não pode ser editado financeiramente
+* Lançamento invoiced não pode ser editado financeiramente
 * Se um lançamento tiver múltiplos locais, soma dos itens = duração total
 
 ---

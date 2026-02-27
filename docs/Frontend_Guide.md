@@ -173,7 +173,7 @@ Invoices
 
 7) Estratégia de Erros e Feedback
 	•	Erros de validação: destacar campo e mostrar mensagem curta
-	•	Erros de conflito (ex: lançamento já faturado): toast + refresh da lista
+	•	Erros de conflito (ex: lançamento já `invoiced`): toast + refresh da lista
 	•	Operações críticas: sempre confirmar (emitir invoice, marcar pago)
 
 ⸻

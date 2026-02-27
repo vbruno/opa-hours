@@ -11,34 +11,34 @@ export const calculatePayableDuration = (
 export const calculateItemTotalCents = (
   payableDuration: Duration,
   hourlyRate: HourlyRate,
+  itemAdditionalCents = 0,
 ): number => {
+  if (!Number.isInteger(itemAdditionalCents)) {
+    throwWorkLogDomainError("WORK_LOG_INVALID_ADDITIONAL_AMOUNT");
+  }
+
   const value = (payableDuration.minutes / 60) * hourlyRate.cents;
-  return Math.round(value);
+  return Math.round(value) + itemAdditionalCents;
 };
 
 export const calculateWorkLogTotal = (
   items: ReadonlyArray<{ totalCents: number }>,
 ): number => items.reduce((acc, item) => acc + item.totalCents, 0);
 
-export const calculateAdditionalTotal = (
-  additions: ReadonlyArray<{ cents: number }>,
-): number => {
-  for (const addition of additions) {
-    if (!Number.isInteger(addition.cents)) {
-      throwWorkLogDomainError("WORK_LOG_INVALID_ADDITIONAL_AMOUNT");
-    }
+export const validateAdditionalAmount = (cents: number): number => {
+  if (!Number.isInteger(cents)) {
+    throwWorkLogDomainError("WORK_LOG_INVALID_ADDITIONAL_AMOUNT");
   }
 
-  return additions.reduce((acc, addition) => acc + addition.cents, 0);
+  return cents;
 };
 
 export const calculateDailyTotalCents = (
   items: ReadonlyArray<{ totalCents: number }>,
-  additions: ReadonlyArray<{ cents: number }>,
+  dailyAdditionalCents: number,
 ): number => {
   const baseTotal = calculateWorkLogTotal(items);
-  const additionalTotal = calculateAdditionalTotal(additions);
-  const total = baseTotal + additionalTotal;
+  const total = baseTotal + validateAdditionalAmount(dailyAdditionalCents);
 
   if (total < 0) {
     throwWorkLogDomainError("WORK_LOG_INVALID_DAILY_TOTAL");

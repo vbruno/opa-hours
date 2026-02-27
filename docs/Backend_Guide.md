@@ -85,10 +85,12 @@ Exemplo de payload:
 
 ### Lançamentos
 
-* `unique(pessoa_id, data)`
-* lançamento **faturado** não pode ser editado financeiramente
+* `unique(pessoa_id, cliente_id, data)`
+* lançamento **invoiced** não pode ser editado financeiramente
 * lançamento só pode estar em **uma** invoice
-* se lançamento tiver múltiplos itens: `Σ(itens.duracao_min) == lancamento.duracao_min`
+* `hora_inicio`, `hora_fim`, `break_min`, `duracao_min` e `valor_total` do lançamento são derivados dos itens
+* `draft` pode existir sem item temporariamente, mas `linked`/`invoiced` exige ao menos 1 item
+* todo item deve pertencer ao mesmo `workDate` do lançamento
 
 ### Invoices
 
@@ -127,27 +129,30 @@ Exemplo de payload:
 * pessoa_id (fk)
 * cliente_id (fk, obrigatório)
 * data (date)
-* hora_inicio (time)
-* hora_fim (time)
-* break_min (int)
-* duracao_min (int)
-* valor_hora (numeric)
-* adicional_dia (numeric, opcional)
-* valor_total (numeric)
+* hora_inicio (timestamp with time zone, derivado do menor `start_at` dos itens)
+* hora_fim (timestamp with time zone, derivado do maior `end_at` dos itens)
+* break_min (int, derivado da soma de breaks dos itens)
+* duracao_min (int, derivado da soma de duração líquida dos itens)
+* adicional_dia (numeric, default 0)
+* valor_total (numeric, derivado)
 * observacoes (text, opcional)
-* status_faturamento (enum: aberto|vinculado|faturado)
+* status_faturamento (enum: draft|linked|invoiced)
 
 **Constraints**
 
-* unique(pessoa_id, data)
+* unique(pessoa_id, cliente_id, data)
 
 #### `lancamentos_itens`
 
 * id (uuid)
 * lancamento_id (fk)
 * endereco (text)
-* duracao_min (int)
-* adicional_item (numeric, opcional)
+* start_at (timestamp with time zone)
+* end_at (timestamp with time zone)
+* break_min (int)
+* duracao_min (int, derivado)
+* valor_hora (numeric)
+* adicional_item (numeric, default 0)
 * observacoes (text, opcional)
 
 #### `invoices`
@@ -196,8 +201,8 @@ Exemplo de payload:
 
 ### 5.1 Status do Lançamento
 
-* **Aberto → Vinculado → Faturado**
-* Vinculado volta para Aberto se o rascunho for cancelado/excluído
+* **Draft → Linked → Invoiced**
+* Linked volta para Draft se o rascunho for cancelado/excluído
 
 ### 5.2 Status da Invoice
 
@@ -211,8 +216,8 @@ Exemplo de payload:
 ### Lançamentos
 
 * UC01 — CreateWorkLog
-* UC02 — UpdateWorkLog *(bloquear se faturado)*
-* UC03 — DeleteWorkLog *(bloquear se faturado)*
+* UC02 — UpdateWorkLog *(bloquear se `invoiced`)*
+* UC03 — DeleteWorkLog *(bloquear se `invoiced`)*
 * UC04 — ListWorkLogs (filtros: período, cliente, status)
 
 ### Invoices
@@ -238,7 +243,7 @@ Em uma transação:
 * criar invoice (rascunho)
 * criar invoice_itens
 * criar invoice_lancamentos
-* setar lançamentos para **Vinculado**
+* setar lançamentos para **Linked**
 
 ### T2 — Emitir Invoice
 
@@ -247,7 +252,7 @@ Em uma transação:
 * validar status rascunho
 * congelar subtotal/gst/total
 * mudar para **Emitida**
-* setar lançamentos para **Faturado**
+* setar lançamentos para **Invoiced**
 
 > PDF pode ser gerado pós-commit, mas o registro de emissão não pode falhar.
 
@@ -300,15 +305,19 @@ Em uma transação:
 
 ### 9.1 Duração do Lançamento
 
-* `duracao_min = (hora_fim - hora_inicio) - break_min`
+* cada item calcula `duracao_min = (end_at - start_at) - break_min`
+* o lançamento consolida `hora_inicio`, `hora_fim`, `break_min` e `duracao_min` a partir dos itens
 
 ### 9.2 Multi-local no Dia
 
-* `Σ(itens.duracao_min) == duracao_min`
+* `Σ(itens.duracao_min) == lancamento.duracao_min`
+* `hora_inicio = min(itens.start_at)`
+* `hora_fim = max(itens.end_at)`
+* item não pode cruzar o dia de referência do lançamento
 
 ### 9.3 Total do Dia
 
-* `valor_total = (duracao_min × valor_hora) + adicional_dia + Σ(adicional_item)`
+* `valor_total = Σ(itens.valor_total) + adicional_dia`
 
 ### 9.4 Invoice — Modo Padrão (Consolidar por Local)
 

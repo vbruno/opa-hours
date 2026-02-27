@@ -3,11 +3,6 @@ import type { WorkLogItem } from "./workLogItem.js";
 import { throwWorkLogDomainError } from "../errors/workLogDomainErrors.js";
 
 export type WorkLogStatus = "draft" | "linked" | "invoiced";
-export type WorkLogAdditional = {
-  id: string;
-  description: string;
-  cents: number;
-};
 
 const isValidWorkDate = (value: string): boolean => {
   if (!/^\d{4}-\d{2}-\d{2}$/.test(value)) {
@@ -26,22 +21,29 @@ const isValidWorkDate = (value: string): boolean => {
 
 export class WorkLog {
   private readonly entries: WorkLogItem[] = [];
-  private readonly additions: WorkLogAdditional[] = [];
   private statusValue: WorkLogStatus;
+  private dailyAdditionalCentsValue: number;
 
   private constructor(
     public readonly id: string,
     public readonly personId: string,
+    public readonly clientId: string,
     public readonly workDate: string,
+    public readonly notes: string | null,
+    dailyAdditionalCents: number,
     status: WorkLogStatus,
   ) {
+    this.dailyAdditionalCentsValue = dailyAdditionalCents;
     this.statusValue = status;
   }
 
   public static create(input: {
     id: string;
     personId: string;
+    clientId: string;
     workDate: string;
+    notes?: string | null;
+    dailyAdditionalCents?: number;
     status?: WorkLogStatus;
   }): WorkLog {
     if (!input.id.trim()) {
@@ -52,14 +54,31 @@ export class WorkLog {
       throwWorkLogDomainError("WORK_LOG_INVALID_PERSON_ID");
     }
 
+    if (!input.clientId.trim()) {
+      throwWorkLogDomainError("WORK_LOG_INVALID_CLIENT_ID");
+    }
+
     if (!isValidWorkDate(input.workDate)) {
       throwWorkLogDomainError("WORK_LOG_INVALID_DATE");
+    }
+
+    const normalizedNotes = input.notes?.trim() ?? null;
+    if (normalizedNotes !== null && normalizedNotes.length > 1000) {
+      throwWorkLogDomainError("WORK_LOG_INVALID_NOTES");
+    }
+
+    const dailyAdditionalCents = input.dailyAdditionalCents ?? 0;
+    if (!Number.isInteger(dailyAdditionalCents)) {
+      throwWorkLogDomainError("WORK_LOG_INVALID_ADDITIONAL_AMOUNT");
     }
 
     return new WorkLog(
       input.id,
       input.personId,
+      input.clientId,
       input.workDate,
+      normalizedNotes,
+      dailyAdditionalCents,
       input.status ?? "draft",
     );
   }
@@ -72,16 +91,62 @@ export class WorkLog {
     return this.entries;
   }
 
-  public get additionals(): readonly WorkLogAdditional[] {
-    return this.additions;
+  public get dailyAdditionalCents(): number {
+    return this.dailyAdditionalCentsValue;
   }
 
   public get totalCents(): number {
-    return calculateDailyTotalCents(this.entries, this.additions);
+    return calculateDailyTotalCents(this.entries, this.dailyAdditionalCentsValue);
+  }
+
+  public get startAt(): Date | null {
+    if (this.entries.length === 0) {
+      return null;
+    }
+
+    return this.entries.reduce((earliest, item) =>
+      item.period.startAt.getTime() < earliest.getTime() ? item.period.startAt : earliest,
+    this.entries[0]!.period.startAt);
+  }
+
+  public get endAt(): Date | null {
+    if (this.entries.length === 0) {
+      return null;
+    }
+
+    return this.entries.reduce((latest, item) =>
+      item.period.endAt.getTime() > latest.getTime() ? item.period.endAt : latest,
+    this.entries[0]!.period.endAt);
+  }
+
+  public get totalBreakMinutes(): number {
+    return this.entries.reduce((acc, item) => acc + item.breakDuration.minutes, 0);
+  }
+
+  public get totalWorkedMinutes(): number {
+    return this.entries.reduce((acc, item) => acc + item.period.getWorkedDuration().minutes, 0);
+  }
+
+  public get totalPayableMinutes(): number {
+    return this.entries.reduce((acc, item) => acc + item.payableDuration.minutes, 0);
+  }
+
+  public setDailyAdditional(cents: number): void {
+    this.ensureMutable();
+
+    if (!Number.isInteger(cents)) {
+      throwWorkLogDomainError("WORK_LOG_INVALID_ADDITIONAL_AMOUNT");
+    }
+
+    this.dailyAdditionalCentsValue = cents;
   }
 
   public addItem(item: WorkLogItem): void {
     this.ensureMutable();
+
+    if (!item.isSingleDay || item.referenceDate !== this.workDate) {
+      throwWorkLogDomainError("WORK_LOG_ITEM_DATE_MISMATCH");
+    }
 
     const alreadyExists = this.entries.some((entry) => entry.id === item.id);
     if (alreadyExists) {
@@ -102,45 +167,11 @@ export class WorkLog {
     this.entries.splice(index, 1);
   }
 
-  public addAdditional(input: WorkLogAdditional): void {
-    this.ensureMutable();
-
-    if (!input.id.trim()) {
-      throwWorkLogDomainError("WORK_LOG_ADDITIONAL_INVALID_ID");
-    }
-
-    if (!input.description.trim()) {
-      throwWorkLogDomainError("WORK_LOG_ADDITIONAL_INVALID_DESCRIPTION");
-    }
-
-    if (!Number.isInteger(input.cents)) {
-      throwWorkLogDomainError("WORK_LOG_INVALID_ADDITIONAL_AMOUNT");
-    }
-
-    const alreadyExists = this.additions.some((item) => item.id === input.id);
-    if (alreadyExists) {
-      throwWorkLogDomainError("WORK_LOG_ADDITIONAL_ALREADY_EXISTS");
-    }
-
-    this.additions.push({
-      id: input.id,
-      description: input.description.trim(),
-      cents: input.cents,
-    });
-  }
-
-  public removeAdditional(additionalId: string): void {
-    this.ensureMutable();
-
-    const index = this.additions.findIndex((item) => item.id === additionalId);
-    if (index === -1) {
-      throwWorkLogDomainError("WORK_LOG_ADDITIONAL_NOT_FOUND");
-    }
-
-    this.additions.splice(index, 1);
-  }
-
   public markLinked(): void {
+    if (this.entries.length === 0) {
+      throwWorkLogDomainError("WORK_LOG_EMPTY");
+    }
+
     if (this.statusValue !== "draft") {
       throwWorkLogDomainError("WORK_LOG_INVALID_STATUS_TRANSITION");
     }
