@@ -4,6 +4,7 @@ import type {
   WorkLogListFilters,
   WorkLogRepository,
 } from "../../../application/work-logs/ports/workLogRepository.js";
+import type { TransactionContext } from "../../../application/shared/ports/transactionContext.js";
 import { WorkLog } from "../../../domain/work-logs/entities/workLog.js";
 import { WorkLogItem } from "../../../domain/work-logs/entities/workLogItem.js";
 import { db } from "../connection.js";
@@ -17,6 +18,14 @@ import {
   type LancamentoItemRow,
   type NewLancamentoItemRow,
 } from "../schema/lancamentosItens.js";
+
+type DatabaseExecutor = Pick<
+  typeof db,
+  "select" | "insert" | "update" | "delete" | "transaction"
+>;
+
+const resolveExecutor = (context?: TransactionContext): DatabaseExecutor =>
+  ((context?.tx as DatabaseExecutor | undefined) ?? db);
 
 const mapItemRowToDomain = (row: LancamentoItemRow): WorkLogItem =>
   WorkLogItem.create({
@@ -79,8 +88,12 @@ const toItemInsert = (
 });
 
 export class DrizzleWorkLogRepository implements WorkLogRepository {
-  public async findById(id: string): Promise<WorkLog | null> {
-    const rows = await db
+  public async findById(
+    id: string,
+    context?: TransactionContext,
+  ): Promise<WorkLog | null> {
+    const executor = resolveExecutor(context);
+    const rows = await executor
       .select()
       .from(lancamentosHora)
       .where(eq(lancamentosHora.id, id))
@@ -91,7 +104,7 @@ export class DrizzleWorkLogRepository implements WorkLogRepository {
       return null;
     }
 
-    const itemRows = await db
+    const itemRows = await executor
       .select()
       .from(lancamentosItens)
       .where(eq(lancamentosItens.lancamentoId, row.id))
@@ -100,67 +113,26 @@ export class DrizzleWorkLogRepository implements WorkLogRepository {
     return mapHeaderRowToDomain(row, itemRows);
   }
 
-  public async findByPersonClientAndDate(
-    personId: string,
-    clientId: string,
-    date: string,
-  ): Promise<WorkLog | null> {
-    const rows = await db
+  public async findManyByIds(
+    ids: string[],
+    context?: TransactionContext,
+  ): Promise<WorkLog[]> {
+    if (ids.length === 0) {
+      return [];
+    }
+
+    const executor = resolveExecutor(context);
+    const rows = await executor
       .select()
       .from(lancamentosHora)
-      .where(
-        and(
-          eq(lancamentosHora.pessoaId, personId),
-          eq(lancamentosHora.clienteId, clientId),
-          eq(lancamentosHora.data, date),
-        ),
-      )
-      .limit(1);
-
-    const row = rows[0];
-    if (!row) {
-      return null;
-    }
-
-    const itemRows = await db
-      .select()
-      .from(lancamentosItens)
-      .where(eq(lancamentosItens.lancamentoId, row.id))
-      .orderBy(asc(lancamentosItens.startAt));
-
-    return mapHeaderRowToDomain(row, itemRows);
-  }
-
-  public async list(filters: WorkLogListFilters): Promise<WorkLog[]> {
-    const conditions = [eq(lancamentosHora.pessoaId, filters.personId)];
-
-    if (filters.clientId) {
-      conditions.push(eq(lancamentosHora.clienteId, filters.clientId));
-    }
-
-    if (filters.status) {
-      conditions.push(eq(lancamentosHora.statusFaturamento, filters.status));
-    }
-
-    if (filters.from) {
-      conditions.push(gte(lancamentosHora.data, filters.from));
-    }
-
-    if (filters.to) {
-      conditions.push(lte(lancamentosHora.data, filters.to));
-    }
-
-    const rows = await db
-      .select()
-      .from(lancamentosHora)
-      .where(and(...conditions))
+      .where(inArray(lancamentosHora.id, ids))
       .orderBy(asc(lancamentosHora.data), asc(lancamentosHora.createdAt));
 
     if (rows.length === 0) {
       return [];
     }
 
-    const itemRows = await db
+    const itemRows = await executor
       .select()
       .from(lancamentosItens)
       .where(
@@ -183,8 +155,137 @@ export class DrizzleWorkLogRepository implements WorkLogRepository {
     );
   }
 
-  public async save(workLog: WorkLog): Promise<void> {
-    await db.transaction(async (tx) => {
+  public async findByPersonClientAndDate(
+    personId: string,
+    clientId: string,
+    date: string,
+    context?: TransactionContext,
+  ): Promise<WorkLog | null> {
+    const executor = resolveExecutor(context);
+    const rows = await executor
+      .select()
+      .from(lancamentosHora)
+      .where(
+        and(
+          eq(lancamentosHora.pessoaId, personId),
+          eq(lancamentosHora.clienteId, clientId),
+          eq(lancamentosHora.data, date),
+        ),
+      )
+      .limit(1);
+
+    const row = rows[0];
+    if (!row) {
+      return null;
+    }
+
+    const itemRows = await executor
+      .select()
+      .from(lancamentosItens)
+      .where(eq(lancamentosItens.lancamentoId, row.id))
+      .orderBy(asc(lancamentosItens.startAt));
+
+    return mapHeaderRowToDomain(row, itemRows);
+  }
+
+  public async list(
+    filters: WorkLogListFilters,
+    context?: TransactionContext,
+  ): Promise<WorkLog[]> {
+    const executor = resolveExecutor(context);
+    const conditions = [eq(lancamentosHora.pessoaId, filters.personId)];
+
+    if (filters.clientId) {
+      conditions.push(eq(lancamentosHora.clienteId, filters.clientId));
+    }
+
+    if (filters.status) {
+      conditions.push(eq(lancamentosHora.statusFaturamento, filters.status));
+    }
+
+    if (filters.from) {
+      conditions.push(gte(lancamentosHora.data, filters.from));
+    }
+
+    if (filters.to) {
+      conditions.push(lte(lancamentosHora.data, filters.to));
+    }
+
+    const rows = await executor
+      .select()
+      .from(lancamentosHora)
+      .where(and(...conditions))
+      .orderBy(asc(lancamentosHora.data), asc(lancamentosHora.createdAt));
+
+    if (rows.length === 0) {
+      return [];
+    }
+
+    const itemRows = await executor
+      .select()
+      .from(lancamentosItens)
+      .where(
+        inArray(
+          lancamentosItens.lancamentoId,
+          rows.map((row) => row.id),
+        ),
+      )
+      .orderBy(asc(lancamentosItens.startAt));
+
+    const itemsByWorkLogId = new Map<string, LancamentoItemRow[]>();
+    for (const itemRow of itemRows) {
+      const current = itemsByWorkLogId.get(itemRow.lancamentoId) ?? [];
+      current.push(itemRow);
+      itemsByWorkLogId.set(itemRow.lancamentoId, current);
+    }
+
+    return rows.map((row) =>
+      mapHeaderRowToDomain(row, itemsByWorkLogId.get(row.id) ?? []),
+    );
+  }
+
+  public async save(
+    workLog: WorkLog,
+    context?: TransactionContext,
+  ): Promise<void> {
+    const executor = resolveExecutor(context);
+
+    if (context) {
+      await executor
+        .insert(lancamentosHora)
+        .values(toHeaderInsert(workLog))
+        .onConflictDoUpdate({
+          target: lancamentosHora.id,
+          set: {
+            pessoaId: workLog.personId,
+            clienteId: workLog.clientId,
+            data: workLog.workDate,
+            horaInicio: workLog.startAt,
+            horaFim: workLog.endAt,
+            breakMin: workLog.totalBreakMinutes,
+            duracaoMin: workLog.totalPayableMinutes,
+            adicionalDiaCents: workLog.dailyAdditionalCents,
+            valorTotalCents: workLog.totalCents,
+            observacoes: workLog.notes,
+            statusFaturamento: workLog.status,
+            updatedAt: new Date(),
+          },
+        });
+
+      await executor
+        .delete(lancamentosItens)
+        .where(eq(lancamentosItens.lancamentoId, workLog.id));
+
+      if (workLog.items.length > 0) {
+        await executor
+          .insert(lancamentosItens)
+          .values(workLog.items.map((item) => toItemInsert(workLog.id, item)));
+      }
+
+      return;
+    }
+
+    await executor.transaction(async (tx) => {
       await tx
         .insert(lancamentosHora)
         .values(toHeaderInsert(workLog))
@@ -218,7 +319,8 @@ export class DrizzleWorkLogRepository implements WorkLogRepository {
     });
   }
 
-  public async delete(id: string): Promise<void> {
-    await db.delete(lancamentosHora).where(eq(lancamentosHora.id, id));
+  public async delete(id: string, context?: TransactionContext): Promise<void> {
+    const executor = resolveExecutor(context);
+    await executor.delete(lancamentosHora).where(eq(lancamentosHora.id, id));
   }
 }

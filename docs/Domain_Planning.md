@@ -194,18 +194,18 @@ Princípios:
 * Prestador (Pessoa)
 * Cliente
 * Status
-* Subtotal
-* GST total (se aplicável)
-* Total
+* Subtotal em centavos
+* GST total em centavos (se aplicável)
+* Total em centavos
 * Referência para invoice anterior (quando houver versionamento)
 
 **Status**
 
-* **Rascunho** (editável)
-* **Emitida** (PDF gerado, imutável)
-* **Enviada**
-* **Paga**
-* **Substituída** (versão antiga invalidada por versão nova)
+* **Draft** (editável)
+* **Issued** (PDF gerado, imutável)
+* **Sent**
+* **Paid**
+* **Superseded** (versão antiga invalidada por versão nova)
 
 **Regras de negócio**
 
@@ -462,14 +462,15 @@ O GST é **opcional e configurável pelo usuário**.
 * cliente_id
 * periodo_inicio
 * periodo_fim
-* status (rascunho|emitida|enviada|paga|substituida)
-* subtotal
-* gst_total
-* total
+* status (draft|issued|sent|paid|superseded)
+* subtotal_cents
+* gst_total_cents
+* total_cents
 * invoice_anterior_id (opcional)
-* criada_em
-* emitida_em (opcional)
-* paga_em (opcional)
+* created_at
+* issued_at (opcional)
+* paid_at (opcional)
+* updated_at
 
 **Constraint**
 
@@ -481,7 +482,7 @@ O GST é **opcional e configurável pelo usuário**.
 * invoice_id
 * descricao
 * endereco
-* valor
+* valor_cents
 * ordem (opcional)
 
 ### Tabela: invoice_lancamentos (relação explícita)

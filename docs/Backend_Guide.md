@@ -168,14 +168,15 @@ Exemplo de payload:
 * cliente_id (fk)
 * periodo_inicio (date)
 * periodo_fim (date)
-* status (enum: rascunho|emitida|enviada|paga|substituida)
-* subtotal (numeric)
-* gst_total (numeric)
-* total (numeric)
+* status (enum: draft|issued|sent|paid|superseded)
+* subtotal_cents (int)
+* gst_total_cents (int)
+* total_cents (int)
 * invoice_anterior_id (fk opcional)
-* criada_em (timestamp)
-* emitida_em (timestamp, opcional)
-* paga_em (timestamp, opcional)
+* created_at (timestamp)
+* issued_at (timestamp, opcional)
+* paid_at (timestamp, opcional)
+* updated_at (timestamp)
 
 **Constraints**
 
@@ -187,7 +188,7 @@ Exemplo de payload:
 * invoice_id (fk)
 * descricao (text)
 * endereco (text)
-* valor (numeric)
+* valor_cents (int)
 * ordem (int, opcional)
 
 #### `invoice_lancamentos`
@@ -210,8 +211,8 @@ Exemplo de payload:
 
 ### 5.2 Status da Invoice
 
-* **Rascunho → Emitida → Enviada → Paga**
-* **Substituída** (somente para versões antigas após revisão)
+* **Draft → Issued → Sent → Paid**
+* **Superseded** (somente para versões antigas após revisão)
 
 ---
 
@@ -377,6 +378,7 @@ Observacoes do contrato atual:
 * [x] Regra ativa: toda mudança de API deve refletir em Swagger/OpenAPI
 * [x] Rotas de `work-logs`
 * [ ] Rotas de `invoices`
+* [x] Base técnica de `invoices` preparada (domínio inicial, ports, schema Drizzle e migration)
 
 ### PDF
 
@@ -401,3 +403,4 @@ Observacoes do contrato atual:
 * [x] 2026-02-15: error handler extraído para plugin dedicado e contrato de erro HTTP padronizado
 * [x] 2026-02-15: validações de usuário reforçadas em API + serviço + constraints no banco
 * [x] 2026-02-28: Etapa 2 concluida com CRUD de `work-logs`, Swagger atualizado e testes de integracao validados em banco de teste local
+* [x] 2026-02-28: base da Etapa 3 preparada com modelo inicial de `invoice`, `invoice_itens`, `invoice_lancamentos`, `UnitOfWork` com contexto transacional e migration `0007_overjoyed_arachne.sql`

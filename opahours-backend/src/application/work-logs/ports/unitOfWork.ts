@@ -1,3 +1,5 @@
+import type { TransactionContext } from "../../shared/ports/transactionContext.js";
+
 export interface UnitOfWork {
-  transaction<T>(handler: () => Promise<T>): Promise<T>;
+  transaction<T>(handler: (context: TransactionContext) => Promise<T>): Promise<T>;
 }
