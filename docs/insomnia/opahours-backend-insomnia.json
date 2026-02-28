@@ -1,7 +1,7 @@
 {
   "_type": "export",
   "__export_format": 4,
-  "__export_date": "2026-02-15T00:00:00.000Z",
+  "__export_date": "2026-02-28T00:00:00.000Z",
   "__export_source": "codex:gpt-5",
   "resources": [
     {
@@ -19,9 +19,12 @@
       "data": {
         "base_url": "http://localhost:3333",
         "email": "admin@example.com",
-        "password": "12345678",
+        "password": "Admin@123",
         "access_token": "",
-        "user_id": ""
+        "user_id": "",
+        "person_id": "",
+        "client_id": "",
+        "work_log_id": ""
       },
       "color": null,
       "isPrivate": false,
@@ -317,6 +320,160 @@
       "name": "DELETE /users/:id",
       "method": "DELETE",
       "url": "{{ _.base_url }}/users/{{ _.user_id }}",
+      "body": {},
+      "parameters": [],
+      "headers": [
+        {
+          "name": "Authorization",
+          "value": "Bearer {{ _.access_token }}"
+        }
+      ],
+      "authentication": {},
+      "metaSortKey": 5,
+      "isPrivate": false,
+      "settingStoreCookies": true,
+      "settingSendCookies": true,
+      "settingDisableRenderRequestBody": false,
+      "settingEncodeUrl": true,
+      "settingRebuildPath": true,
+      "settingFollowRedirects": "global",
+      "settingRequestTimeout": 0
+    },
+    {
+      "_id": "fld_work_logs",
+      "_type": "request_group",
+      "parentId": "wrk_opahours_backend",
+      "name": "Work Logs",
+      "description": "",
+      "environment": {},
+      "environmentPropertyOrder": null,
+      "metaSortKey": 5
+    },
+    {
+      "_id": "req_work_logs_list",
+      "_type": "request",
+      "parentId": "fld_work_logs",
+      "name": "GET /work-logs",
+      "method": "GET",
+      "url": "{{ _.base_url }}/work-logs?personId={{ _.person_id }}&from=2026-02-01&to=2026-02-28",
+      "body": {},
+      "parameters": [],
+      "headers": [
+        {
+          "name": "Authorization",
+          "value": "Bearer {{ _.access_token }}"
+        }
+      ],
+      "authentication": {},
+      "metaSortKey": 1,
+      "isPrivate": false,
+      "settingStoreCookies": true,
+      "settingSendCookies": true,
+      "settingDisableRenderRequestBody": false,
+      "settingEncodeUrl": true,
+      "settingRebuildPath": true,
+      "settingFollowRedirects": "global",
+      "settingRequestTimeout": 0
+    },
+    {
+      "_id": "req_work_logs_get_by_id",
+      "_type": "request",
+      "parentId": "fld_work_logs",
+      "name": "GET /work-logs/:id",
+      "method": "GET",
+      "url": "{{ _.base_url }}/work-logs/{{ _.work_log_id }}",
+      "body": {},
+      "parameters": [],
+      "headers": [
+        {
+          "name": "Authorization",
+          "value": "Bearer {{ _.access_token }}"
+        }
+      ],
+      "authentication": {},
+      "metaSortKey": 2,
+      "isPrivate": false,
+      "settingStoreCookies": true,
+      "settingSendCookies": true,
+      "settingDisableRenderRequestBody": false,
+      "settingEncodeUrl": true,
+      "settingRebuildPath": true,
+      "settingFollowRedirects": "global",
+      "settingRequestTimeout": 0
+    },
+    {
+      "_id": "req_work_logs_create",
+      "_type": "request",
+      "parentId": "fld_work_logs",
+      "name": "POST /work-logs",
+      "method": "POST",
+      "url": "{{ _.base_url }}/work-logs",
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"personId\": \"{{ _.person_id }}\",\n  \"clientId\": \"{{ _.client_id }}\",\n  \"workDate\": \"2026-02-28\",\n  \"notes\": \"Worked on client site\",\n  \"dailyAdditionalCents\": 500,\n  \"items\": [\n    {\n      \"location\": \"Client HQ\",\n      \"startAt\": \"2026-02-28T09:00:00.000Z\",\n      \"endAt\": \"2026-02-28T12:00:00.000Z\",\n      \"breakMinutes\": 30,\n      \"hourlyRateCents\": 10000,\n      \"additionalCents\": 250,\n      \"notes\": \"Morning block\"\n    }\n  ]\n}"
+      },
+      "parameters": [],
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        },
+        {
+          "name": "Authorization",
+          "value": "Bearer {{ _.access_token }}"
+        }
+      ],
+      "authentication": {},
+      "metaSortKey": 3,
+      "isPrivate": false,
+      "settingStoreCookies": true,
+      "settingSendCookies": true,
+      "settingDisableRenderRequestBody": false,
+      "settingEncodeUrl": true,
+      "settingRebuildPath": true,
+      "settingFollowRedirects": "global",
+      "settingRequestTimeout": 0
+    },
+    {
+      "_id": "req_work_logs_update",
+      "_type": "request",
+      "parentId": "fld_work_logs",
+      "name": "PUT /work-logs/:id",
+      "method": "PUT",
+      "url": "{{ _.base_url }}/work-logs/{{ _.work_log_id }}",
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"notes\": \"Updated by Insomnia\",\n  \"dailyAdditionalCents\": 1000,\n  \"items\": [\n    {\n      \"location\": \"Client HQ\",\n      \"startAt\": \"2026-02-28T09:00:00.000Z\",\n      \"endAt\": \"2026-02-28T13:00:00.000Z\",\n      \"breakMinutes\": 30,\n      \"hourlyRateCents\": 10000,\n      \"additionalCents\": 500,\n      \"notes\": \"Extended block\"\n    }\n  ]\n}"
+      },
+      "parameters": [],
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        },
+        {
+          "name": "Authorization",
+          "value": "Bearer {{ _.access_token }}"
+        }
+      ],
+      "authentication": {},
+      "metaSortKey": 4,
+      "isPrivate": false,
+      "settingStoreCookies": true,
+      "settingSendCookies": true,
+      "settingDisableRenderRequestBody": false,
+      "settingEncodeUrl": true,
+      "settingRebuildPath": true,
+      "settingFollowRedirects": "global",
+      "settingRequestTimeout": 0
+    },
+    {
+      "_id": "req_work_logs_delete",
+      "_type": "request",
+      "parentId": "fld_work_logs",
+      "name": "DELETE /work-logs/:id",
+      "method": "DELETE",
+      "url": "{{ _.base_url }}/work-logs/{{ _.work_log_id }}",
       "body": {},
       "parameters": [],
       "headers": [

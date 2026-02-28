@@ -270,7 +270,7 @@ Em uma transação:
 
 ---
 
-## 8) API (Contratos sugeridos)
+## 8) API (Contrato atual / proximo passo)
 
 ### 8.0 Auth e Users (implementado no foundation)
 
@@ -284,12 +284,20 @@ Em uma transação:
 * `PUT /users/:id` (private, self only)
 * `DELETE /users/:id` (private, self only)
 
-### 8.1 Work Logs
+### 8.1 Work Logs (implementado na Etapa 2)
 
+* `GET /work-logs?personId&from&to&clientId&status`
+* `GET /work-logs/:id`
 * `POST /work-logs`
 * `PUT /work-logs/:id`
 * `DELETE /work-logs/:id`
-* `GET /work-logs?from&to&clientId&status`
+
+Observacoes do contrato atual:
+
+* `personId` ainda e explicito no CRUD/listagem porque o relacionamento tecnico entre `auth_users` e `pessoas` ainda nao foi modelado
+* `GET /work-logs` exige `personId`
+* `POST /work-logs` e `PUT /work-logs/:id` aceitam `items` opcionais enquanto o lancamento estiver em `draft`
+* validacao e documentacao OpenAPI ja publicadas no Swagger da API
 
 ### 8.2 Invoices
 
@@ -351,12 +359,12 @@ Em uma transação:
 
 ### Domínio
 
-* [ ] Entidades e invariantes
-* [ ] Cálculos (duração, total do dia)
+* [x] Entidades e invariantes
+* [x] Cálculos (duração, total do dia)
 
 ### Casos de uso
 
-* [ ] UC01–UC04 (Work Logs)
+* [x] UC01–UC04 (Work Logs)
 * [ ] UC05–UC07 (Draft/Emit)
 * [ ] UC08–UC10 (Status/Revision)
 
@@ -367,7 +375,7 @@ Em uma transação:
 * [x] Autenticação (JWT + refresh cookie)
 * [x] Classificação de acesso (`public` / `private`)
 * [x] Regra ativa: toda mudança de API deve refletir em Swagger/OpenAPI
-* [ ] Rotas de `work-logs`
+* [x] Rotas de `work-logs`
 * [ ] Rotas de `invoices`
 
 ### PDF
@@ -377,8 +385,9 @@ Em uma transação:
 
 ### Testes
 
-* [ ] Unit (cálculos/invariantes)
-* [ ] Integration (transações críticas)
+* [x] Unit (cálculos/invariantes)
+* [x] Integration (`auth`, `users` e CRUD de `work-logs` em banco de teste)
+* [ ] Integration (transações críticas de invoice)
 
 ---
 
@@ -391,3 +400,4 @@ Em uma transação:
 * [x] 2026-02-15: rotas classificadas com `config.access` (`public` / `private`)
 * [x] 2026-02-15: error handler extraído para plugin dedicado e contrato de erro HTTP padronizado
 * [x] 2026-02-15: validações de usuário reforçadas em API + serviço + constraints no banco
+* [x] 2026-02-28: Etapa 2 concluida com CRUD de `work-logs`, Swagger atualizado e testes de integracao validados em banco de teste local

@@ -154,9 +154,15 @@ Regras de integração de sessão
 
 Work Logs
 	•	GET /work-logs
+	•	GET /work-logs/:id
 	•	POST /work-logs
 	•	PUT /work-logs/:id
 	•	DELETE /work-logs/:id
+
+Observações do contrato atual
+	•	GET /work-logs exige `personId` na query
+	•	Enquanto não existir vínculo técnico entre `auth_users` e `pessoas`, o frontend deve enviar `personId` explicitamente no CRUD/listagem de lançamentos
+	•	Um lançamento em `draft` pode existir sem itens; ao avançar fluxo de invoice ele precisa ter ao menos 1 item
 
 Invoices
 	•	GET /invoices
