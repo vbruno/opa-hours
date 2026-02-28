@@ -8,6 +8,7 @@ import { authRoutes } from "./routes/auth.routes.js";
 import { swaggerPlugin } from "./plugins/swagger.js";
 import { healthRoutes } from "./routes/health.routes.js";
 import { usersRoutes } from "./routes/users.routes.js";
+import { workLogsRoutes } from "./routes/work-logs.routes.js";
 
 export const buildServer = () => {
   const app = Fastify({ loggerInstance: logger });
@@ -19,6 +20,7 @@ export const buildServer = () => {
   app.register(healthRoutes);
   app.register(authRoutes);
   app.register(usersRoutes);
+  app.register(workLogsRoutes);
 
   return app;
 };

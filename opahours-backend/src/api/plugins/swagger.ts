@@ -24,6 +24,10 @@ const swaggerPluginHandler: FastifyPluginAsync = async (app) => {
           name: "Users",
           description: "Single-user account management endpoints",
         },
+        {
+          name: "Work Logs",
+          description: "Time entry and billing source endpoints",
+        },
       ],
       components: {
         securitySchemes: {
