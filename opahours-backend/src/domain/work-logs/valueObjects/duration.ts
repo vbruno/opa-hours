@@ -4,7 +4,11 @@ export class Duration {
   private constructor(private readonly minutesValue: number) {}
 
   public static fromMinutes(minutes: number): Duration {
-    if (!Number.isFinite(minutes) || !Number.isInteger(minutes) || minutes < 0) {
+    if (
+      !Number.isFinite(minutes) ||
+      !Number.isInteger(minutes) ||
+      minutes < 0
+    ) {
       throwWorkLogDomainError("WORK_LOG_INVALID_DURATION");
     }
 

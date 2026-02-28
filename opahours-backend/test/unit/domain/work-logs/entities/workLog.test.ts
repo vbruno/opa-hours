@@ -110,7 +110,9 @@ describe("workLog entity", () => {
       workDate: "2026-02-22",
     });
 
-    expect(() => workLog.removeItem("item-x")).toThrowError("WORK_LOG_ITEM_NOT_FOUND");
+    expect(() => workLog.removeItem("item-x")).toThrowError(
+      "WORK_LOG_ITEM_NOT_FOUND",
+    );
   });
 
   it("applies daily additional in total", () => {
@@ -151,9 +153,13 @@ describe("workLog entity", () => {
     workLog.markLinked();
     workLog.markInvoiced();
 
-    expect(() => workLog.addItem(createItem("item-1"))).toThrowError("WORK_LOG_LOCKED");
+    expect(() => workLog.addItem(createItem("item-1"))).toThrowError(
+      "WORK_LOG_LOCKED",
+    );
     expect(() => workLog.removeItem("item-1")).toThrowError("WORK_LOG_LOCKED");
-    expect(() => workLog.setDailyAdditional(1000)).toThrowError("WORK_LOG_LOCKED");
+    expect(() => workLog.setDailyAdditional(1000)).toThrowError(
+      "WORK_LOG_LOCKED",
+    );
   });
 
   it("blocks duplicate item ids", () => {
@@ -238,7 +244,9 @@ describe("workLog entity", () => {
       hourlyRateCents: 10000,
     });
 
-    expect(() => workLog.addItem(item)).toThrowError("WORK_LOG_ITEM_DATE_MISMATCH");
+    expect(() => workLog.addItem(item)).toThrowError(
+      "WORK_LOG_ITEM_DATE_MISMATCH",
+    );
   });
 
   it("rejects item when period crosses day boundary", () => {
@@ -258,6 +266,8 @@ describe("workLog entity", () => {
       hourlyRateCents: 10000,
     });
 
-    expect(() => workLog.addItem(item)).toThrowError("WORK_LOG_ITEM_DATE_MISMATCH");
+    expect(() => workLog.addItem(item)).toThrowError(
+      "WORK_LOG_ITEM_DATE_MISMATCH",
+    );
   });
 });

@@ -47,10 +47,7 @@ export const signJwt = (
   return `${encodedHeader}.${encodedPayload}.${encodedSignature}`;
 };
 
-export const verifyJwt = (
-  token: string,
-  secret: string,
-): JwtClaims | null => {
+export const verifyJwt = (token: string, secret: string): JwtClaims | null => {
   try {
     const parts = token.split(".");
 
@@ -60,7 +57,10 @@ export const verifyJwt = (
 
     const [encodedHeader, encodedPayload, encodedSignature] = parts;
 
-    const expectedSignature = sign(`${encodedHeader}.${encodedPayload}`, secret);
+    const expectedSignature = sign(
+      `${encodedHeader}.${encodedPayload}`,
+      secret,
+    );
 
     const expectedSignatureBytes = base64UrlDecode(expectedSignature);
     const incomingSignatureBytes = base64UrlDecode(encodedSignature);

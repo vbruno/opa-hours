@@ -20,7 +20,10 @@ const swaggerPluginHandler: FastifyPluginAsync = async (app) => {
       tags: [
         { name: "System", description: "System and diagnostics endpoints" },
         { name: "Auth", description: "Authentication and session endpoints" },
-        { name: "Users", description: "Single-user account management endpoints" },
+        {
+          name: "Users",
+          description: "Single-user account management endpoints",
+        },
       ],
       components: {
         securitySchemes: {

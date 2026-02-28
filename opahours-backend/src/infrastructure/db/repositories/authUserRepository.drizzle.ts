@@ -23,13 +23,19 @@ export interface UpdateAuthUserInput {
 
 export class AuthUserRepository {
   public async countUsers(): Promise<number> {
-    const rows = await db.select({ count: sql<number>`count(*)` }).from(authUsers);
+    const rows = await db
+      .select({ count: sql<number>`count(*)` })
+      .from(authUsers);
 
     return Number(rows[0]?.count ?? 0);
   }
 
   public async findById(id: string): Promise<AuthUserRow | null> {
-    const rows = await db.select().from(authUsers).where(eq(authUsers.id, id)).limit(1);
+    const rows = await db
+      .select()
+      .from(authUsers)
+      .where(eq(authUsers.id, id))
+      .limit(1);
 
     return rows[0] ?? null;
   }
@@ -62,14 +68,18 @@ export class AuthUserRepository {
     return rows[0];
   }
 
-  public async update(id: string, input: UpdateAuthUserInput): Promise<AuthUserRow | null> {
+  public async update(
+    id: string,
+    input: UpdateAuthUserInput,
+  ): Promise<AuthUserRow | null> {
     const values: Partial<NewAuthUserRow> = {
       updatedAt: new Date(),
     };
 
     if (input.name !== undefined) values.name = input.name.trim();
     if (input.email !== undefined) values.email = input.email.toLowerCase();
-    if (input.passwordHash !== undefined) values.passwordHash = input.passwordHash;
+    if (input.passwordHash !== undefined)
+      values.passwordHash = input.passwordHash;
     if (input.isActive !== undefined) values.isActive = input.isActive;
 
     const rows = await db
@@ -82,7 +92,10 @@ export class AuthUserRepository {
   }
 
   public async delete(id: string): Promise<boolean> {
-    const rows = await db.delete(authUsers).where(eq(authUsers.id, id)).returning();
+    const rows = await db
+      .delete(authUsers)
+      .where(eq(authUsers.id, id))
+      .returning();
 
     return rows.length > 0;
   }

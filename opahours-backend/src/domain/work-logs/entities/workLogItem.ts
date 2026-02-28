@@ -1,4 +1,8 @@
-import { calculateItemTotalCents, calculatePayableDuration, validateAdditionalAmount } from "../rules/calculators.js";
+import {
+  calculateItemTotalCents,
+  calculatePayableDuration,
+  validateAdditionalAmount,
+} from "../rules/calculators.js";
 import { Duration } from "../valueObjects/duration.js";
 import { HourlyRate } from "../valueObjects/hourlyRate.js";
 import { WorkPeriod } from "../valueObjects/workPeriod.js";
@@ -55,7 +59,9 @@ export class WorkLogItem {
 
     const breakDuration = Duration.fromMinutes(input.breakMinutes);
     const hourlyRate = HourlyRate.fromCents(input.hourlyRateCents);
-    const additionalCents = validateAdditionalAmount(input.additionalCents ?? 0);
+    const additionalCents = validateAdditionalAmount(
+      input.additionalCents ?? 0,
+    );
 
     return new WorkLogItem(
       input.id,

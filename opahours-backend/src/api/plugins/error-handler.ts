@@ -70,22 +70,20 @@ const errorHandlerPluginHandler: FastifyPluginAsync = async (app) => {
       });
     }
 
-    if (
-      typeof error === "object" &&
-      error !== null &&
-      "validation" in error
-    ) {
+    if (typeof error === "object" && error !== null && "validation" in error) {
       return reply.status(400).send({
         code: "VALIDATION_ERROR",
         message: errorMessages.VALIDATION_ERROR,
-        details: toAjvValidationDetails(error as {
-          validation?: Array<{
-            keyword?: string;
-            message?: string;
-            instancePath?: string;
-            params?: { missingProperty?: string };
-          }>;
-        }),
+        details: toAjvValidationDetails(
+          error as {
+            validation?: Array<{
+              keyword?: string;
+              message?: string;
+              instancePath?: string;
+              params?: { missingProperty?: string };
+            }>;
+          },
+        ),
         requestId: request.id,
       });
     }

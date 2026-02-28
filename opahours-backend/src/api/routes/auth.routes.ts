@@ -15,7 +15,10 @@ const loginBodySchema = z.object({
 
 const REFRESH_COOKIE_NAME = "refreshToken";
 
-const getCookieValue = (cookieHeader: string | undefined, key: string): string | null => {
+const getCookieValue = (
+  cookieHeader: string | undefined,
+  key: string,
+): string | null => {
   if (!cookieHeader) {
     return null;
   }
@@ -89,10 +92,7 @@ const errorSchema = {
     code: { type: "string" },
     message: { type: "string" },
     details: {
-      anyOf: [
-        { type: "object", additionalProperties: true },
-        { type: "null" },
-      ],
+      anyOf: [{ type: "object", additionalProperties: true }, { type: "null" }],
     },
     requestId: { type: "string" },
   },
@@ -106,7 +106,8 @@ export const authRoutes: FastifyPluginAsync = async (app) => {
       schema: {
         tags: ["Auth"],
         summary: "Login",
-        description: "Authenticate user and start session. Returns access token and sets refresh cookie.",
+        description:
+          "Authenticate user and start session. Returns access token and sets refresh cookie.",
         body: {
           type: "object",
           required: ["email", "password"],
@@ -177,33 +178,33 @@ export const authRoutes: FastifyPluginAsync = async (app) => {
       },
     },
     async (request, reply) => {
-    const refreshToken = getCookieValue(
-      request.headers.cookie,
-      REFRESH_COOKIE_NAME,
-    );
-
-    if (!refreshToken) {
-      clearRefreshCookieOnReply(reply);
-      throw new AppError(
-        "AUTH_MISSING_REFRESH_TOKEN",
-        errorMessages.AUTH_MISSING_REFRESH_TOKEN,
-        401,
+      const refreshToken = getCookieValue(
+        request.headers.cookie,
+        REFRESH_COOKIE_NAME,
       );
-    }
 
-    try {
-      const { user, tokens } = await authService.refresh({ refreshToken });
+      if (!refreshToken) {
+        clearRefreshCookieOnReply(reply);
+        throw new AppError(
+          "AUTH_MISSING_REFRESH_TOKEN",
+          errorMessages.AUTH_MISSING_REFRESH_TOKEN,
+          401,
+        );
+      }
 
-      reply.header("Set-Cookie", buildRefreshCookie(tokens.refreshToken));
+      try {
+        const { user, tokens } = await authService.refresh({ refreshToken });
 
-      return {
-        user,
-        accessToken: tokens.accessToken,
-      };
-    } catch (error) {
-      clearRefreshCookieOnReply(reply);
-      throw error;
-    }
+        reply.header("Set-Cookie", buildRefreshCookie(tokens.refreshToken));
+
+        return {
+          user,
+          accessToken: tokens.accessToken,
+        };
+      } catch (error) {
+        clearRefreshCookieOnReply(reply);
+        throw error;
+      }
     },
   );
 
@@ -214,7 +215,8 @@ export const authRoutes: FastifyPluginAsync = async (app) => {
       schema: {
         tags: ["Auth"],
         summary: "Logout",
-        description: "Revoke refresh token when present and always clear refresh cookie.",
+        description:
+          "Revoke refresh token when present and always clear refresh cookie.",
         security: [{ refreshTokenCookie: [] }],
         parameters: [
           {
@@ -265,7 +267,8 @@ export const authRoutes: FastifyPluginAsync = async (app) => {
       schema: {
         tags: ["Auth"],
         summary: "Get current user",
-        description: "Return authenticated user profile from access token context.",
+        description:
+          "Return authenticated user profile from access token context.",
         security: [{ bearerAuth: [] }],
         response: {
           200: authUserSchema,

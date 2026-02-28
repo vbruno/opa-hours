@@ -8,16 +8,22 @@ export const workLogDomainErrorMessages = {
   WORK_LOG_ITEM_ALREADY_EXISTS: "Work log item already exists",
   WORK_LOG_ITEM_NOT_FOUND: "Work log item not found",
   WORK_LOG_ITEM_DATE_MISMATCH: "Work log item period must match work log date",
-  WORK_LOG_INVALID_ADDITIONAL_AMOUNT: "Additional amount must be an integer in cents",
+  WORK_LOG_INVALID_ADDITIONAL_AMOUNT:
+    "Additional amount must be an integer in cents",
   WORK_LOG_INVALID_STATUS_TRANSITION: "Invalid work log status transition",
   WORK_LOG_LOCKED: "Work log is invoiced and cannot be changed",
   WORK_LOG_ITEM_INVALID_ID: "Work log item id is required",
   WORK_LOG_ITEM_INVALID_LOCATION: "Work log item location is required",
-  WORK_LOG_ITEM_INVALID_NOTES: "Work log item notes must be 1000 characters or less",
-  WORK_LOG_INVALID_DURATION: "Duration must be a non-negative integer in minutes",
-  WORK_LOG_INVALID_BREAK_DURATION: "Break duration cannot exceed worked duration",
-  WORK_LOG_INVALID_HOURLY_RATE: "Hourly rate must be a positive integer in cents",
-  WORK_LOG_INVALID_PERIOD_TIMEZONE: "Datetime must include an explicit timezone",
+  WORK_LOG_ITEM_INVALID_NOTES:
+    "Work log item notes must be 1000 characters or less",
+  WORK_LOG_INVALID_DURATION:
+    "Duration must be a non-negative integer in minutes",
+  WORK_LOG_INVALID_BREAK_DURATION:
+    "Break duration cannot exceed worked duration",
+  WORK_LOG_INVALID_HOURLY_RATE:
+    "Hourly rate must be a positive integer in cents",
+  WORK_LOG_INVALID_PERIOD_TIMEZONE:
+    "Datetime must include an explicit timezone",
   WORK_LOG_INVALID_PERIOD: "Work period is invalid",
   WORK_LOG_INVALID_PERIOD_PRECISION: "Work period must be minute-based",
   WORK_LOG_DURATION_EXCEEDS_LIMIT: "Work period cannot exceed 24 hours",

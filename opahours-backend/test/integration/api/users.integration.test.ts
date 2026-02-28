@@ -14,7 +14,11 @@ import {
   resetAuthTables,
   setupTestDatabase,
 } from "../../helpers/testDatabase.js";
-import { bootstrapUser, loginUser, seedAuthSession } from "../../helpers/auth.js";
+import {
+  bootstrapUser,
+  loginUser,
+  seedAuthSession,
+} from "../../helpers/auth.js";
 
 describe.sequential("Users integration (test DB)", () => {
   let app: ReturnType<typeof buildServer> | null = null;
@@ -75,7 +79,9 @@ describe.sequential("Users integration (test DB)", () => {
   });
 
   it("returns only authenticated user on GET /users", async () => {
-    const { createUser, login, user, accessToken } = await seedAuthSession(app!);
+    const { createUser, login, user, accessToken } = await seedAuthSession(
+      app!,
+    );
     expect(createUser.statusCode).toBe(201);
     expect(login.statusCode).toBe(200);
 
@@ -111,7 +117,9 @@ describe.sequential("Users integration (test DB)", () => {
   });
 
   it("updates user and returns new values", async () => {
-    const { createUser, login, user, accessToken } = await seedAuthSession(app!);
+    const { createUser, login, user, accessToken } = await seedAuthSession(
+      app!,
+    );
     expect(createUser.statusCode).toBe(201);
     expect(login.statusCode).toBe(200);
 
@@ -131,7 +139,9 @@ describe.sequential("Users integration (test DB)", () => {
   });
 
   it("returns VALIDATION_ERROR for empty update payload", async () => {
-    const { createUser, login, user, accessToken } = await seedAuthSession(app!);
+    const { createUser, login, user, accessToken } = await seedAuthSession(
+      app!,
+    );
     expect(createUser.statusCode).toBe(201);
     expect(login.statusCode).toBe(200);
 
@@ -149,7 +159,9 @@ describe.sequential("Users integration (test DB)", () => {
   });
 
   it("deletes user and blocks subsequent login", async () => {
-    const { createUser, login, user, accessToken } = await seedAuthSession(app!);
+    const { createUser, login, user, accessToken } = await seedAuthSession(
+      app!,
+    );
     expect(createUser.statusCode).toBe(201);
     expect(login.statusCode).toBe(200);
 

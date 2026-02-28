@@ -9,14 +9,20 @@ describe("hourlyRate value object", () => {
   });
 
   it("rejects zero value", () => {
-    expect(() => HourlyRate.fromCents(0)).toThrowError("WORK_LOG_INVALID_HOURLY_RATE");
+    expect(() => HourlyRate.fromCents(0)).toThrowError(
+      "WORK_LOG_INVALID_HOURLY_RATE",
+    );
   });
 
   it("rejects negative values", () => {
-    expect(() => HourlyRate.fromCents(-100)).toThrowError("WORK_LOG_INVALID_HOURLY_RATE");
+    expect(() => HourlyRate.fromCents(-100)).toThrowError(
+      "WORK_LOG_INVALID_HOURLY_RATE",
+    );
   });
 
   it("rejects non-integer values", () => {
-    expect(() => HourlyRate.fromCents(100.1)).toThrowError("WORK_LOG_INVALID_HOURLY_RATE");
+    expect(() => HourlyRate.fromCents(100.1)).toThrowError(
+      "WORK_LOG_INVALID_HOURLY_RATE",
+    );
   });
 });

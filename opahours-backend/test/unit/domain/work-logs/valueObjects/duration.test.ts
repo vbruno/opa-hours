@@ -9,11 +9,15 @@ describe("duration value object", () => {
   });
 
   it("rejects negative minutes", () => {
-    expect(() => Duration.fromMinutes(-1)).toThrowError("WORK_LOG_INVALID_DURATION");
+    expect(() => Duration.fromMinutes(-1)).toThrowError(
+      "WORK_LOG_INVALID_DURATION",
+    );
   });
 
   it("rejects non-integer minutes", () => {
-    expect(() => Duration.fromMinutes(12.5)).toThrowError("WORK_LOG_INVALID_DURATION");
+    expect(() => Duration.fromMinutes(12.5)).toThrowError(
+      "WORK_LOG_INVALID_DURATION",
+    );
   });
 
   it("rejects subtract when break is greater than worked duration", () => {

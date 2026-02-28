@@ -68,12 +68,8 @@
           "name": "auth_refresh_tokens_user_id_auth_users_id_fk",
           "tableFrom": "auth_refresh_tokens",
           "tableTo": "auth_users",
-          "columnsFrom": [
-            "user_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["user_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -83,9 +79,7 @@
         "auth_refresh_tokens_token_hash_unique": {
           "name": "auth_refresh_tokens_token_hash_unique",
           "nullsNotDistinct": false,
-          "columns": [
-            "token_hash"
-          ]
+          "columns": ["token_hash"]
         }
       },
       "policies": {},
@@ -165,9 +159,7 @@
         "auth_users_email_unique": {
           "name": "auth_users_email_unique",
           "nullsNotDistinct": false,
-          "columns": [
-            "email"
-          ]
+          "columns": ["email"]
         }
       },
       "policies": {},
@@ -374,12 +366,8 @@
           "name": "lancamentos_hora_pessoa_id_pessoas_id_fk",
           "tableFrom": "lancamentos_hora",
           "tableTo": "pessoas",
-          "columnsFrom": [
-            "pessoa_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["pessoa_id"],
+          "columnsTo": ["id"],
           "onDelete": "restrict",
           "onUpdate": "no action"
         },
@@ -387,12 +375,8 @@
           "name": "lancamentos_hora_cliente_id_clientes_id_fk",
           "tableFrom": "lancamentos_hora",
           "tableTo": "clientes",
-          "columnsFrom": [
-            "cliente_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["cliente_id"],
+          "columnsTo": ["id"],
           "onDelete": "restrict",
           "onUpdate": "no action"
         }
@@ -519,12 +503,8 @@
           "name": "lancamentos_itens_lancamento_id_lancamentos_hora_id_fk",
           "tableFrom": "lancamentos_itens",
           "tableTo": "lancamentos_hora",
-          "columnsFrom": [
-            "lancamento_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["lancamento_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -648,11 +628,7 @@
     "public.lancamento_status": {
       "name": "lancamento_status",
       "schema": "public",
-      "values": [
-        "draft",
-        "linked",
-        "invoiced"
-      ]
+      "values": ["draft", "linked", "invoiced"]
     }
   },
   "schemas": {},

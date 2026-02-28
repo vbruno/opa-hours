@@ -12,6 +12,9 @@ export const errorMessages = {
   AUTH_MISSING_REFRESH_TOKEN: "Missing refresh token",
   AUTH_INVALID_REFRESH_TOKEN: "Invalid refresh token",
   AUTH_REFRESH_TOKEN_EXPIRED: "Refresh token expired",
+  WORK_LOG_NOT_FOUND: "Work log not found",
+  WORK_LOG_ALREADY_EXISTS:
+    "Work log already exists for person, client and date",
   VALIDATION_ERROR: "Invalid request payload",
   INTERNAL_SERVER_ERROR: "Unexpected internal server error",
 } as const;

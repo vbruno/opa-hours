@@ -53,9 +53,7 @@
         "auth_refresh_tokens_token_hash_unique": {
           "name": "auth_refresh_tokens_token_hash_unique",
           "nullsNotDistinct": false,
-          "columns": [
-            "token_hash"
-          ]
+          "columns": ["token_hash"]
         }
       },
       "policies": {},
@@ -126,9 +124,7 @@
         "auth_users_email_unique": {
           "name": "auth_users_email_unique",
           "nullsNotDistinct": false,
-          "columns": [
-            "email"
-          ]
+          "columns": ["email"]
         }
       },
       "policies": {},

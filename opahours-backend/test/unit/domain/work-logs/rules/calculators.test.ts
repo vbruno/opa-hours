@@ -28,9 +28,9 @@ describe("work-log calculators", () => {
       endAt: "2026-02-22T10:00:00.000Z",
     });
 
-    expect(() => calculatePayableDuration(period, Duration.fromMinutes(70))).toThrowError(
-      "WORK_LOG_INVALID_BREAK_DURATION",
-    );
+    expect(() =>
+      calculatePayableDuration(period, Duration.fromMinutes(70)),
+    ).toThrowError("WORK_LOG_INVALID_BREAK_DURATION");
   });
 
   it("calculates total cents by duration, hourly rate and item additional", () => {
@@ -68,9 +68,9 @@ describe("work-log calculators", () => {
   });
 
   it("rejects additional amount when not integer", () => {
-    expect(() =>
-      validateAdditionalAmount(1000.1),
-    ).toThrowError("WORK_LOG_INVALID_ADDITIONAL_AMOUNT");
+    expect(() => validateAdditionalAmount(1000.1)).toThrowError(
+      "WORK_LOG_INVALID_ADDITIONAL_AMOUNT",
+    );
   });
 
   it("calculates daily total from items and daily additional", () => {
@@ -84,10 +84,7 @@ describe("work-log calculators", () => {
 
   it("rejects daily total lower than zero", () => {
     expect(() =>
-      calculateDailyTotalCents(
-        [{ totalCents: 1000 }],
-        -2000,
-      ),
+      calculateDailyTotalCents([{ totalCents: 1000 }], -2000),
     ).toThrowError("WORK_LOG_INVALID_DAILY_TOTAL");
   });
 });

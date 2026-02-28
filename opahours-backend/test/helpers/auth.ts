@@ -16,7 +16,9 @@ type LoginPayload = {
   password?: string;
 };
 
-export const toCookieHeader = (setCookie: string | string[] | undefined): string => {
+export const toCookieHeader = (
+  setCookie: string | string[] | undefined,
+): string => {
   if (!setCookie) {
     return "";
   }
@@ -35,15 +37,14 @@ export const bootstrapUser = async (
       name: payload?.name ?? "Admin",
       email: payload?.email ?? "admin@example.com",
       password: payload?.password ?? "Admin@123",
-      ...(payload?.isActive !== undefined ? { isActive: payload.isActive } : {}),
+      ...(payload?.isActive !== undefined
+        ? { isActive: payload.isActive }
+        : {}),
     },
   });
 };
 
-export const loginUser = async (
-  app: TestApp,
-  payload?: LoginPayload,
-) => {
+export const loginUser = async (app: TestApp, payload?: LoginPayload) => {
   return app.inject({
     method: "POST",
     url: "/auth/login",

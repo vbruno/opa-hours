@@ -6,9 +6,13 @@ const KEY_LENGTH = 32;
 
 export const hashPassword = (password: string): string => {
   const salt = randomBytes(16).toString("hex");
-  const hash = pbkdf2Sync(password, salt, ITERATIONS, KEY_LENGTH, ALGORITHM).toString(
-    "hex",
-  );
+  const hash = pbkdf2Sync(
+    password,
+    salt,
+    ITERATIONS,
+    KEY_LENGTH,
+    ALGORITHM,
+  ).toString("hex");
 
   return `pbkdf2$${ITERATIONS}$${salt}$${hash}`;
 };
@@ -33,7 +37,13 @@ export const verifyPassword = (
     return false;
   }
 
-  const computedHash = pbkdf2Sync(password, salt, iterations, KEY_LENGTH, ALGORITHM);
+  const computedHash = pbkdf2Sync(
+    password,
+    salt,
+    iterations,
+    KEY_LENGTH,
+    ALGORITHM,
+  );
   const expectedBuffer = Buffer.from(expectedHash, "hex");
 
   if (expectedBuffer.length !== computedHash.length) {

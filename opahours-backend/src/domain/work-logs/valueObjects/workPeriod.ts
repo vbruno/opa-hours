@@ -23,7 +23,10 @@ export class WorkPeriod {
     public readonly endAt: Date,
   ) {}
 
-  public static create(input: { startAt: Date | string; endAt: Date | string }): WorkPeriod {
+  public static create(input: {
+    startAt: Date | string;
+    endAt: Date | string;
+  }): WorkPeriod {
     const startAt = parseDateInput(input.startAt);
     const endAt = parseDateInput(input.endAt);
 
@@ -49,7 +52,8 @@ export class WorkPeriod {
   }
 
   public getWorkedDuration(): Duration {
-    const diffMinutes = (this.endAt.getTime() - this.startAt.getTime()) / MINUTE_IN_MILLISECONDS;
+    const diffMinutes =
+      (this.endAt.getTime() - this.startAt.getTime()) / MINUTE_IN_MILLISECONDS;
 
     return Duration.fromMinutes(diffMinutes);
   }

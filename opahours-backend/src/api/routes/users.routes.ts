@@ -9,10 +9,12 @@ const userService = new UserService();
 
 const nameSchema = z.string().trim().min(2).max(120);
 const emailSchema = z.string().trim().email().toLowerCase();
-const PASSWORD_POLICY_REGEX = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^A-Za-z0-9]).+$/;
+const PASSWORD_POLICY_REGEX =
+  /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^A-Za-z0-9]).+$/;
 const PASSWORD_POLICY_DESCRIPTION =
   "At least 8 chars with uppercase, lowercase, number and special character";
-const PASSWORD_POLICY_PATTERN = "^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)(?=.*[^A-Za-z0-9]).+$";
+const PASSWORD_POLICY_PATTERN =
+  "^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)(?=.*[^A-Za-z0-9]).+$";
 const passwordSchema = z
   .string()
   .min(8)
@@ -53,11 +55,7 @@ const idParamsSchema = z.object({
 
 const ensureSelf = (request: FastifyRequest, targetUserId: string): void => {
   if (!request.user || request.user.sub !== targetUserId) {
-    throw new AppError(
-      "AUTH_FORBIDDEN",
-      errorMessages.AUTH_FORBIDDEN,
-      403,
-    );
+    throw new AppError("AUTH_FORBIDDEN", errorMessages.AUTH_FORBIDDEN, 403);
   }
 };
 
@@ -81,10 +79,7 @@ const errorSchema = {
     code: { type: "string" },
     message: { type: "string" },
     details: {
-      anyOf: [
-        { type: "object", additionalProperties: true },
-        { type: "null" },
-      ],
+      anyOf: [{ type: "object", additionalProperties: true }, { type: "null" }],
     },
     requestId: { type: "string" },
   },
@@ -106,7 +101,8 @@ export const usersRoutes: FastifyPluginAsync = async (app) => {
       schema: {
         tags: ["Users"],
         summary: "Bootstrap first user",
-        description: "Create initial user account. Allowed only when no user exists.",
+        description:
+          "Create initial user account. Allowed only when no user exists.",
         body: {
           type: "object",
           required: ["name", "email", "password"],

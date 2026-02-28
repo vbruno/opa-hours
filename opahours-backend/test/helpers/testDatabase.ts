@@ -1,7 +1,10 @@
 import { sql } from "drizzle-orm";
 import { migrate } from "drizzle-orm/node-postgres/migrator";
 
-import { closeDatabaseConnection, db } from "../../src/infrastructure/db/connection.js";
+import {
+  closeDatabaseConnection,
+  db,
+} from "../../src/infrastructure/db/connection.js";
 
 export const setupTestDatabase = async (): Promise<void> => {
   await migrate(db, {

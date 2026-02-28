@@ -1,7 +1,10 @@
 import { describe, expect, it } from "vitest";
 import { createHmac } from "node:crypto";
 
-import { signJwt, verifyJwt } from "../../../src/application/auth/security/jwt.js";
+import {
+  signJwt,
+  verifyJwt,
+} from "../../../src/application/auth/security/jwt.js";
 
 const base64UrlEncode = (value: Buffer | string): string =>
   Buffer.from(value)
@@ -42,7 +45,9 @@ describe("jwt security", () => {
 
   it("returns null for valid signature but payload without exp", () => {
     const secret = "secret-a";
-    const encodedHeader = base64UrlEncode(JSON.stringify({ alg: "HS256", typ: "JWT" }));
+    const encodedHeader = base64UrlEncode(
+      JSON.stringify({ alg: "HS256", typ: "JWT" }),
+    );
     const encodedPayload = base64UrlEncode(
       JSON.stringify({ sub: "user-1", type: "access", iat: 1000 }),
     );

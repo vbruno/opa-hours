@@ -9,7 +9,8 @@ const currentDir = dirname(currentFilePath);
 
 loadDotenv({ path: resolve(currentDir, ".env") });
 
-const migrationsDatabaseUrl = process.env.DATABASE_URL_MIGRATIONS ?? process.env.DATABASE_URL;
+const migrationsDatabaseUrl =
+  process.env.DATABASE_URL_MIGRATIONS ?? process.env.DATABASE_URL;
 
 if (!migrationsDatabaseUrl) {
   throw new Error(

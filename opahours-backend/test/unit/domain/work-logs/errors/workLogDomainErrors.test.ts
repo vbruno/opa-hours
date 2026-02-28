@@ -12,6 +12,8 @@ describe("workLog domain errors", () => {
     expect(error.name).toBe("WorkLogDomainError");
     expect(error.code).toBe("WORK_LOG_INVALID_ID");
     expect(error.message).toContain("WORK_LOG_INVALID_ID");
-    expect(error.message).toContain(workLogDomainErrorMessages.WORK_LOG_INVALID_ID);
+    expect(error.message).toContain(
+      workLogDomainErrorMessages.WORK_LOG_INVALID_ID,
+    );
   });
 });

@@ -83,6 +83,41 @@ export class WorkLog {
     );
   }
 
+  public static rehydrate(input: {
+    id: string;
+    personId: string;
+    clientId: string;
+    workDate: string;
+    notes?: string | null;
+    dailyAdditionalCents?: number;
+    status: WorkLogStatus;
+    items: WorkLogItem[];
+  }): WorkLog {
+    const workLog = WorkLog.create({
+      id: input.id,
+      personId: input.personId,
+      clientId: input.clientId,
+      workDate: input.workDate,
+      notes: input.notes,
+      dailyAdditionalCents: input.dailyAdditionalCents,
+    });
+
+    for (const item of input.items) {
+      workLog.addItem(item);
+    }
+
+    if (input.status === "linked") {
+      workLog.markLinked();
+    }
+
+    if (input.status === "invoiced") {
+      workLog.markLinked();
+      workLog.markInvoiced();
+    }
+
+    return workLog;
+  }
+
   public get status(): WorkLogStatus {
     return this.statusValue;
   }
@@ -96,7 +131,10 @@ export class WorkLog {
   }
 
   public get totalCents(): number {
-    return calculateDailyTotalCents(this.entries, this.dailyAdditionalCentsValue);
+    return calculateDailyTotalCents(
+      this.entries,
+      this.dailyAdditionalCentsValue,
+    );
   }
 
   public get startAt(): Date | null {
@@ -104,9 +142,13 @@ export class WorkLog {
       return null;
     }
 
-    return this.entries.reduce((earliest, item) =>
-      item.period.startAt.getTime() < earliest.getTime() ? item.period.startAt : earliest,
-    this.entries[0]!.period.startAt);
+    return this.entries.reduce(
+      (earliest, item) =>
+        item.period.startAt.getTime() < earliest.getTime()
+          ? item.period.startAt
+          : earliest,
+      this.entries[0]!.period.startAt,
+    );
   }
 
   public get endAt(): Date | null {
@@ -114,21 +156,34 @@ export class WorkLog {
       return null;
     }
 
-    return this.entries.reduce((latest, item) =>
-      item.period.endAt.getTime() > latest.getTime() ? item.period.endAt : latest,
-    this.entries[0]!.period.endAt);
+    return this.entries.reduce(
+      (latest, item) =>
+        item.period.endAt.getTime() > latest.getTime()
+          ? item.period.endAt
+          : latest,
+      this.entries[0]!.period.endAt,
+    );
   }
 
   public get totalBreakMinutes(): number {
-    return this.entries.reduce((acc, item) => acc + item.breakDuration.minutes, 0);
+    return this.entries.reduce(
+      (acc, item) => acc + item.breakDuration.minutes,
+      0,
+    );
   }
 
   public get totalWorkedMinutes(): number {
-    return this.entries.reduce((acc, item) => acc + item.period.getWorkedDuration().minutes, 0);
+    return this.entries.reduce(
+      (acc, item) => acc + item.period.getWorkedDuration().minutes,
+      0,
+    );
   }
 
   public get totalPayableMinutes(): number {
-    return this.entries.reduce((acc, item) => acc + item.payableDuration.minutes, 0);
+    return this.entries.reduce(
+      (acc, item) => acc + item.payableDuration.minutes,
+      0,
+    );
   }
 
   public setDailyAdditional(cents: number): void {

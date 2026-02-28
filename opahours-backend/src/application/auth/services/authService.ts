@@ -36,7 +36,8 @@ const toUserView = (input: {
 const hashToken = (token: string): string =>
   createHash("sha256").update(token).digest("hex");
 
-const isHex = (value: string): boolean => /^[a-f0-9]+$/i.test(value) && value.length % 2 === 0;
+const isHex = (value: string): boolean =>
+  /^[a-f0-9]+$/i.test(value) && value.length % 2 === 0;
 
 const safeHashEquals = (left: string, right: string): boolean => {
   if (!isHex(left) || !isHex(right)) {
@@ -95,15 +96,29 @@ const mapAuthUserConstraintError = (error: unknown): AppError | null => {
         409,
       );
     case "auth_users_name_min_len_check":
-      return new AppError("AUTH_INVALID_NAME", errorMessages.AUTH_INVALID_NAME, 400);
+      return new AppError(
+        "AUTH_INVALID_NAME",
+        errorMessages.AUTH_INVALID_NAME,
+        400,
+      );
     case "auth_users_email_lowercase_check":
-      return new AppError("AUTH_INVALID_EMAIL", errorMessages.AUTH_INVALID_EMAIL, 400, {
-        rule: "lowercase",
-      });
+      return new AppError(
+        "AUTH_INVALID_EMAIL",
+        errorMessages.AUTH_INVALID_EMAIL,
+        400,
+        {
+          rule: "lowercase",
+        },
+      );
     case "auth_users_email_format_check":
-      return new AppError("AUTH_INVALID_EMAIL", errorMessages.AUTH_INVALID_EMAIL, 400, {
-        rule: "format",
-      });
+      return new AppError(
+        "AUTH_INVALID_EMAIL",
+        errorMessages.AUTH_INVALID_EMAIL,
+        400,
+        {
+          rule: "format",
+        },
+      );
     default:
       return null;
   }
@@ -170,7 +185,11 @@ export class AuthService {
       });
 
       if (!updated) {
-        throw new AppError("AUTH_USER_NOT_FOUND", errorMessages.AUTH_USER_NOT_FOUND, 404);
+        throw new AppError(
+          "AUTH_USER_NOT_FOUND",
+          errorMessages.AUTH_USER_NOT_FOUND,
+          404,
+        );
       }
 
       return toUserView(updated);
@@ -189,7 +208,11 @@ export class AuthService {
     const user = await this.userRepository.findById(id);
 
     if (!user) {
-      throw new AppError("AUTH_USER_NOT_FOUND", errorMessages.AUTH_USER_NOT_FOUND, 404);
+      throw new AppError(
+        "AUTH_USER_NOT_FOUND",
+        errorMessages.AUTH_USER_NOT_FOUND,
+        404,
+      );
     }
 
     return toUserView(user);
@@ -217,12 +240,10 @@ export class AuthService {
       }
     }
 
-    const normalizedName = input.name !== undefined
-      ? normalizeName(input.name)
-      : undefined;
-    const normalizedEmail = input.email !== undefined
-      ? normalizeEmail(input.email)
-      : undefined;
+    const normalizedName =
+      input.name !== undefined ? normalizeName(input.name) : undefined;
+    const normalizedEmail =
+      input.email !== undefined ? normalizeEmail(input.email) : undefined;
 
     let updated;
     try {
@@ -243,7 +264,11 @@ export class AuthService {
     }
 
     if (!updated) {
-      throw new AppError("AUTH_USER_NOT_FOUND", errorMessages.AUTH_USER_NOT_FOUND, 404);
+      throw new AppError(
+        "AUTH_USER_NOT_FOUND",
+        errorMessages.AUTH_USER_NOT_FOUND,
+        404,
+      );
     }
 
     return toUserView(updated);
@@ -253,7 +278,11 @@ export class AuthService {
     const deleted = await this.userRepository.delete(id);
 
     if (!deleted) {
-      throw new AppError("AUTH_USER_NOT_FOUND", errorMessages.AUTH_USER_NOT_FOUND, 404);
+      throw new AppError(
+        "AUTH_USER_NOT_FOUND",
+        errorMessages.AUTH_USER_NOT_FOUND,
+        404,
+      );
     }
 
     await this.refreshTokenRepository.revokeAllByUserId(id);
@@ -267,7 +296,9 @@ export class AuthService {
     email: string;
     password: string;
   }): Promise<{ user: AuthUserView; tokens: TokenPair }> {
-    const user = await this.userRepository.findByEmail(normalizeEmail(input.email));
+    const user = await this.userRepository.findByEmail(
+      normalizeEmail(input.email),
+    );
 
     if (!user || !verifyPassword(input.password, user.passwordHash)) {
       throw new AppError(
@@ -278,7 +309,11 @@ export class AuthService {
     }
 
     if (!user.isActive) {
-      throw new AppError("AUTH_USER_INACTIVE", errorMessages.AUTH_USER_INACTIVE, 403);
+      throw new AppError(
+        "AUTH_USER_INACTIVE",
+        errorMessages.AUTH_USER_INACTIVE,
+        403,
+      );
     }
 
     // Single-user mode: keep only one active refresh session per login.
