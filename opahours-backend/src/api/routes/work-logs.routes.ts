@@ -126,8 +126,12 @@ const workLogResponseSchema = {
     notes: { anyOf: [{ type: "string" }, { type: "null" }] },
     dailyAdditionalCents: { type: "integer" },
     status: { type: "string", enum: ["draft", "linked", "invoiced"] },
-    startAt: { anyOf: [{ type: "string", format: "date-time" }, { type: "null" }] },
-    endAt: { anyOf: [{ type: "string", format: "date-time" }, { type: "null" }] },
+    startAt: {
+      anyOf: [{ type: "string", format: "date-time" }, { type: "null" }],
+    },
+    endAt: {
+      anyOf: [{ type: "string", format: "date-time" }, { type: "null" }],
+    },
     totalBreakMinutes: { type: "integer" },
     totalWorkedMinutes: { type: "integer" },
     totalPayableMinutes: { type: "integer" },
@@ -139,7 +143,9 @@ const workLogResponseSchema = {
   },
 };
 
-const mapItemInput = (item: z.infer<typeof workLogItemSchema>): WorkLogItemInput => ({
+const mapItemInput = (
+  item: z.infer<typeof workLogItemSchema>,
+): WorkLogItemInput => ({
   id: item.id,
   location: item.location,
   startAt: item.startAt,
@@ -172,7 +178,9 @@ const mapUpdateInput = (
   items: body.items?.map(mapItemInput),
 });
 
-const serializeWorkLog = (workLog: Awaited<ReturnType<WorkLogService["getWorkLogById"]>>) => ({
+const serializeWorkLog = (
+  workLog: Awaited<ReturnType<WorkLogService["getWorkLogById"]>>,
+) => ({
   id: workLog.id,
   personId: workLog.personId,
   clientId: workLog.clientId,
@@ -284,7 +292,9 @@ export const workLogsRoutes: FastifyPluginAsync = async (app) => {
             personId: { type: "string", format: "uuid" },
             clientId: { type: "string", format: "uuid" },
             workDate: { type: "string", format: "date" },
-            notes: { anyOf: [{ type: "string", maxLength: 1000 }, { type: "null" }] },
+            notes: {
+              anyOf: [{ type: "string", maxLength: 1000 }, { type: "null" }],
+            },
             dailyAdditionalCents: { type: "integer" },
             items: {
               type: "array",
@@ -305,7 +315,12 @@ export const workLogsRoutes: FastifyPluginAsync = async (app) => {
                   breakMinutes: { type: "integer", minimum: 0 },
                   hourlyRateCents: { type: "integer", minimum: 1 },
                   additionalCents: { type: "integer" },
-                  notes: { anyOf: [{ type: "string", maxLength: 1000 }, { type: "null" }] },
+                  notes: {
+                    anyOf: [
+                      { type: "string", maxLength: 1000 },
+                      { type: "null" },
+                    ],
+                  },
                 },
               },
             },
@@ -352,7 +367,9 @@ export const workLogsRoutes: FastifyPluginAsync = async (app) => {
             personId: { type: "string", format: "uuid" },
             clientId: { type: "string", format: "uuid" },
             workDate: { type: "string", format: "date" },
-            notes: { anyOf: [{ type: "string", maxLength: 1000 }, { type: "null" }] },
+            notes: {
+              anyOf: [{ type: "string", maxLength: 1000 }, { type: "null" }],
+            },
             dailyAdditionalCents: { type: "integer" },
             items: {
               type: "array",
@@ -373,7 +390,12 @@ export const workLogsRoutes: FastifyPluginAsync = async (app) => {
                   breakMinutes: { type: "integer", minimum: 0 },
                   hourlyRateCents: { type: "integer", minimum: 1 },
                   additionalCents: { type: "integer" },
-                  notes: { anyOf: [{ type: "string", maxLength: 1000 }, { type: "null" }] },
+                  notes: {
+                    anyOf: [
+                      { type: "string", maxLength: 1000 },
+                      { type: "null" },
+                    ],
+                  },
                 },
               },
             },
