@@ -12,14 +12,20 @@ export interface WorkLogListFilters {
 
 export interface WorkLogRepository {
   findById(id: string, context?: TransactionContext): Promise<WorkLog | null>;
-  findManyByIds(ids: string[], context?: TransactionContext): Promise<WorkLog[]>;
+  findManyByIds(
+    ids: string[],
+    context?: TransactionContext,
+  ): Promise<WorkLog[]>;
   findByPersonClientAndDate(
     personId: string,
     clientId: string,
     date: string,
     context?: TransactionContext,
   ): Promise<WorkLog | null>;
-  list(filters: WorkLogListFilters, context?: TransactionContext): Promise<WorkLog[]>;
+  list(
+    filters: WorkLogListFilters,
+    context?: TransactionContext,
+  ): Promise<WorkLog[]>;
   save(workLog: WorkLog, context?: TransactionContext): Promise<void>;
   delete(id: string, context?: TransactionContext): Promise<void>;
 }

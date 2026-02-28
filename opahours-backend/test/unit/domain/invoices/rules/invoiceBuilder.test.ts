@@ -1,6 +1,7 @@
 import { randomUUID } from "node:crypto";
 import { describe, expect, it } from "vitest";
 
+import { InvoiceDomainError } from "../../../../../src/domain/invoices/errors/invoiceDomainErrors.js";
 import { WorkLog } from "../../../../../src/domain/work-logs/entities/workLog.js";
 import { WorkLogItem } from "../../../../../src/domain/work-logs/entities/workLogItem.js";
 import { buildInvoiceDraft } from "../../../../../src/domain/invoices/rules/invoiceBuilder.js";
@@ -39,6 +40,21 @@ const makeWorkLog = (
   });
 
 describe("invoiceBuilder", () => {
+  const expectInvoiceErrorCode = (
+    fn: () => unknown,
+    code: InvoiceDomainError["code"],
+  ) => {
+    try {
+      fn();
+    } catch (error) {
+      expect(error).toBeInstanceOf(InvoiceDomainError);
+      expect((error as InvoiceDomainError).code).toBe(code);
+      return;
+    }
+
+    throw new Error(`Expected InvoiceDomainError with code ${code}`);
+  };
+
   it("builds invoice draft grouped by location", () => {
     const personId = randomUUID();
     const clientId = randomUUID();
@@ -76,13 +92,84 @@ describe("invoiceBuilder", () => {
   });
 
   it("rejects empty work-log selection", () => {
-    expect(() =>
-      buildInvoiceDraft({
-        invoiceNumber: 1,
-        personId: randomUUID(),
-        clientId: randomUUID(),
-        workLogs: [],
-      }),
-    ).toThrow("Invoice draft requires at least one work log");
+    expectInvoiceErrorCode(
+      () =>
+        buildInvoiceDraft({
+          invoiceNumber: 1,
+          personId: randomUUID(),
+          clientId: randomUUID(),
+          workLogs: [],
+        }),
+      "INVOICE_DRAFT_EMPTY_SELECTION",
+    );
+  });
+
+  it("rejects duplicate work-log ids in selection", () => {
+    const personId = randomUUID();
+    const clientId = randomUUID();
+    const workLog = makeWorkLog({ personId, clientId });
+
+    expectInvoiceErrorCode(
+      () =>
+        buildInvoiceDraft({
+          invoiceNumber: 1,
+          personId,
+          clientId,
+          workLogs: [workLog, workLog],
+        }),
+      "INVOICE_DRAFT_DUPLICATE_WORK_LOG",
+    );
+  });
+
+  it("rejects mixed clients or persons", () => {
+    const personId = randomUUID();
+    const clientId = randomUUID();
+    const anotherClientId = randomUUID();
+    const first = makeWorkLog({ personId, clientId });
+    const second = makeWorkLog({ personId, clientId: anotherClientId });
+
+    expectInvoiceErrorCode(
+      () =>
+        buildInvoiceDraft({
+          invoiceNumber: 1,
+          personId,
+          clientId,
+          workLogs: [first, second],
+        }),
+      "INVOICE_DRAFT_MIXED_CLIENTS",
+    );
+  });
+
+  it("rejects non-draft work logs", () => {
+    const personId = randomUUID();
+    const clientId = randomUUID();
+    const workLog = WorkLog.rehydrate({
+      id: randomUUID(),
+      personId,
+      clientId,
+      workDate: "2026-02-28",
+      status: "linked",
+      items: [
+        WorkLogItem.create({
+          id: randomUUID(),
+          location: "Client HQ",
+          startAt: "2026-02-28T09:00:00.000Z",
+          endAt: "2026-02-28T10:00:00.000Z",
+          breakMinutes: 0,
+          hourlyRateCents: 10_000,
+        }),
+      ],
+    });
+
+    expectInvoiceErrorCode(
+      () =>
+        buildInvoiceDraft({
+          invoiceNumber: 1,
+          personId,
+          clientId,
+          workLogs: [workLog],
+        }),
+      "INVOICE_DRAFT_INELIGIBLE_STATUS",
+    );
   });
 });

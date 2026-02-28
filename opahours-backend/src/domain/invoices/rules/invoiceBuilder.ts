@@ -3,6 +3,7 @@ import { randomUUID } from "node:crypto";
 import type { WorkLog } from "../../work-logs/entities/workLog.js";
 import { Invoice } from "../entities/invoice.js";
 import { InvoiceItem } from "../entities/invoiceItem.js";
+import { throwInvoiceDomainError } from "../errors/invoiceDomainErrors.js";
 import { calculateGst } from "./gst.js";
 
 export interface BuildInvoiceDraftInput {
@@ -47,11 +48,37 @@ const groupByLocation = (workLogs: WorkLog[]): InvoiceItem[] => {
   );
 };
 
-export const buildInvoiceDraft = (
-  input: BuildInvoiceDraftInput,
-): Invoice => {
+export const buildInvoiceDraft = (input: BuildInvoiceDraftInput): Invoice => {
   if (input.workLogs.length === 0) {
-    throw new Error("Invoice draft requires at least one work log");
+    throwInvoiceDomainError("INVOICE_DRAFT_EMPTY_SELECTION");
+  }
+
+  const workLogIds = new Set<string>();
+  for (const workLog of input.workLogs) {
+    if (workLogIds.has(workLog.id)) {
+      throwInvoiceDomainError("INVOICE_DRAFT_DUPLICATE_WORK_LOG", {
+        workLogId: workLog.id,
+      });
+    }
+
+    workLogIds.add(workLog.id);
+  }
+
+  const personIds = new Set(input.workLogs.map((workLog) => workLog.personId));
+  if (personIds.size > 1 || !personIds.has(input.personId)) {
+    throwInvoiceDomainError("INVOICE_DRAFT_MIXED_PERSONS");
+  }
+
+  const clientIds = new Set(input.workLogs.map((workLog) => workLog.clientId));
+  if (clientIds.size > 1 || !clientIds.has(input.clientId)) {
+    throwInvoiceDomainError("INVOICE_DRAFT_MIXED_CLIENTS");
+  }
+
+  const hasIneligibleStatus = input.workLogs.some(
+    (workLog) => workLog.status !== "draft",
+  );
+  if (hasIneligibleStatus) {
+    throwInvoiceDomainError("INVOICE_DRAFT_INELIGIBLE_STATUS");
   }
 
   const periodStart = [...input.workLogs]
@@ -63,10 +90,7 @@ export const buildInvoiceDraft = (
     .at(-1)!;
 
   const items = groupByLocation(input.workLogs);
-  const subtotalCents = items.reduce(
-    (sum, item) => sum + item.amountCents,
-    0,
-  );
+  const subtotalCents = items.reduce((sum, item) => sum + item.amountCents, 0);
   const gstTotalCents = calculateGst(subtotalCents, input.gstPercentage ?? 0);
 
   return Invoice.create({
@@ -82,6 +106,6 @@ export const buildInvoiceDraft = (
     gstTotalCents,
     totalCents: subtotalCents + gstTotalCents,
     items,
-    workLogIds: input.workLogs.map((workLog) => workLog.id),
+    workLogIds: [...workLogIds],
   });
 };

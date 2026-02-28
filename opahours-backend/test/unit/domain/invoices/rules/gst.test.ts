@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 
 import { calculateGst } from "../../../../../src/domain/invoices/rules/gst.js";
+import { InvoiceDomainError } from "../../../../../src/domain/invoices/errors/invoiceDomainErrors.js";
 
 describe("gst rules", () => {
   it("calculates gst in cents", () => {
@@ -8,11 +9,22 @@ describe("gst rules", () => {
   });
 
   it("rejects invalid values", () => {
-    expect(() => calculateGst(-1, 10)).toThrow(
-      "subtotalCents must be a non-negative integer",
-    );
-    expect(() => calculateGst(10_000, -1)).toThrow(
-      "gstPercentage must be a non-negative integer",
-    );
+    try {
+      calculateGst(-1, 10);
+    } catch (error) {
+      expect(error).toBeInstanceOf(InvoiceDomainError);
+      expect((error as InvoiceDomainError).code).toBe(
+        "INVOICE_INVALID_SUBTOTAL",
+      );
+    }
+
+    try {
+      calculateGst(10_000, -1);
+    } catch (error) {
+      expect(error).toBeInstanceOf(InvoiceDomainError);
+      expect((error as InvoiceDomainError).code).toBe(
+        "INVOICE_INVALID_GST_TOTAL",
+      );
+    }
   });
 });

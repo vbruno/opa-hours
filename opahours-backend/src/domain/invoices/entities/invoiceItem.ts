@@ -1,3 +1,5 @@
+import { throwInvoiceDomainError } from "../errors/invoiceDomainErrors.js";
+
 export interface InvoiceItemProps {
   id: string;
   description: string;
@@ -6,29 +8,28 @@ export interface InvoiceItemProps {
   sortOrder?: number;
 }
 
-const assertUuid = (value: string, field: string): void => {
-  if (!value || value.trim().length < 36) {
-    throw new Error(`${field} must be a valid UUID`);
-  }
-};
+const UUID_REGEX =
+  /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 
 export class InvoiceItem {
   public static create(props: InvoiceItemProps): InvoiceItem {
-    assertUuid(props.id, "InvoiceItem id");
+    if (!UUID_REGEX.test(props.id)) {
+      throwInvoiceDomainError("INVOICE_INVALID_ITEM_ID");
+    }
 
     if (props.description.trim().length < 2) {
-      throw new Error("InvoiceItem description must contain at least 2 characters");
+      throwInvoiceDomainError("INVOICE_INVALID_ITEM_DESCRIPTION");
     }
 
     if (!Number.isInteger(props.amountCents) || props.amountCents < 0) {
-      throw new Error("InvoiceItem amountCents must be a non-negative integer");
+      throwInvoiceDomainError("INVOICE_INVALID_ITEM_AMOUNT");
     }
 
     if (
       props.sortOrder !== undefined &&
       (!Number.isInteger(props.sortOrder) || props.sortOrder < 0)
     ) {
-      throw new Error("InvoiceItem sortOrder must be a non-negative integer");
+      throwInvoiceDomainError("INVOICE_INVALID_ITEM_SORT_ORDER");
     }
 
     return new InvoiceItem(props);

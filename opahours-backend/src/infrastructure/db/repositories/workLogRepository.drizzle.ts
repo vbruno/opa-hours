@@ -4,7 +4,10 @@ import type {
   WorkLogListFilters,
   WorkLogRepository,
 } from "../../../application/work-logs/ports/workLogRepository.js";
-import type { TransactionContext } from "../../../application/shared/ports/transactionContext.js";
+import type {
+  TransactionContext,
+  TransactionExecutor,
+} from "../../../application/shared/ports/transactionContext.js";
 import { WorkLog } from "../../../domain/work-logs/entities/workLog.js";
 import { WorkLogItem } from "../../../domain/work-logs/entities/workLogItem.js";
 import { db } from "../connection.js";
@@ -19,13 +22,10 @@ import {
   type NewLancamentoItemRow,
 } from "../schema/lancamentosItens.js";
 
-type DatabaseExecutor = Pick<
-  typeof db,
-  "select" | "insert" | "update" | "delete" | "transaction"
->;
+type DatabaseExecutor = TransactionExecutor;
 
 const resolveExecutor = (context?: TransactionContext): DatabaseExecutor =>
-  ((context?.tx as DatabaseExecutor | undefined) ?? db);
+  context?.tx ?? (db as unknown as DatabaseExecutor);
 
 const mapItemRowToDomain = (row: LancamentoItemRow): WorkLogItem =>
   WorkLogItem.create({

@@ -5,6 +5,11 @@ import { ZodError } from "zod";
 import { AppError } from "../../application/shared/errors/appError.js";
 import { errorMessages } from "../../application/shared/errors/errorMessages.js";
 import {
+  getInvoiceDomainErrorStatusCode,
+  InvoiceDomainError,
+  invoiceDomainErrorMessages,
+} from "../../domain/invoices/errors/invoiceDomainErrors.js";
+import {
   getWorkLogDomainErrorStatusCode,
   WorkLogDomainError,
   workLogDomainErrorMessages,
@@ -65,6 +70,15 @@ const errorHandlerPluginHandler: FastifyPluginAsync = async (app) => {
       return reply.status(getWorkLogDomainErrorStatusCode(error.code)).send({
         code: error.code,
         message: workLogDomainErrorMessages[error.code],
+        details: error.details ?? null,
+        requestId: request.id,
+      });
+    }
+
+    if (error instanceof InvoiceDomainError) {
+      return reply.status(getInvoiceDomainErrorStatusCode(error.code)).send({
+        code: error.code,
+        message: invoiceDomainErrorMessages[error.code],
         details: error.details ?? null,
         requestId: request.id,
       });

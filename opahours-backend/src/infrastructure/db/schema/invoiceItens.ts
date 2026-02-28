@@ -1,5 +1,12 @@
 import { sql } from "drizzle-orm";
-import { check, index, integer, pgTable, text, uuid } from "drizzle-orm/pg-core";
+import {
+  check,
+  index,
+  integer,
+  pgTable,
+  text,
+  uuid,
+} from "drizzle-orm/pg-core";
 
 import { invoices } from "./invoices.js";
 
