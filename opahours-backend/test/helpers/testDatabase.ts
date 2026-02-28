@@ -6,12 +6,25 @@ import {
   db,
 } from "../../src/infrastructure/db/connection.js";
 
+let setupPromise: Promise<void> | null = null;
+let isDatabaseReady = false;
+
 export const setupTestDatabase = async (): Promise<void> => {
-  await migrate(db, {
-    migrationsFolder: "src/infrastructure/db/migrations",
-    migrationsSchema: "public",
-    migrationsTable: "__drizzle_migrations",
-  });
+  if (isDatabaseReady) {
+    return;
+  }
+
+  if (!setupPromise) {
+    setupPromise = migrate(db, {
+      migrationsFolder: "src/infrastructure/db/migrations",
+      migrationsSchema: "public",
+      migrationsTable: "__drizzle_migrations",
+    }).then(() => {
+      isDatabaseReady = true;
+    });
+  }
+
+  await setupPromise;
 };
 
 export const resetAuthTables = async (): Promise<void> => {
@@ -27,5 +40,7 @@ export const resetAllTables = async (): Promise<void> => {
 };
 
 export const closeTestDatabase = async (): Promise<void> => {
+  setupPromise = null;
+  isDatabaseReady = false;
   await closeDatabaseConnection();
 };

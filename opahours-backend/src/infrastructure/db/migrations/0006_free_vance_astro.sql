@@ -69,5 +69,4 @@ ALTER TABLE "lancamentos_hora" ADD CONSTRAINT "lancamentos_hora_pessoa_id_pessoa
 ALTER TABLE "lancamentos_hora" ADD CONSTRAINT "lancamentos_hora_cliente_id_clientes_id_fk" FOREIGN KEY ("cliente_id") REFERENCES "public"."clientes"("id") ON DELETE restrict ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "lancamentos_itens" ADD CONSTRAINT "lancamentos_itens_lancamento_id_lancamentos_hora_id_fk" FOREIGN KEY ("lancamento_id") REFERENCES "public"."lancamentos_hora"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 CREATE UNIQUE INDEX "lancamentos_hora_pessoa_cliente_data_unique" ON "lancamentos_hora" USING btree ("pessoa_id","cliente_id","data");--> statement-breakpoint
-CREATE INDEX "lancamentos_itens_lancamento_id_idx" ON "lancamentos_itens" USING btree ("lancamento_id");--> statement-breakpoint
-ALTER TABLE "auth_refresh_tokens" ADD CONSTRAINT "auth_refresh_tokens_user_id_auth_users_id_fk" FOREIGN KEY ("user_id") REFERENCES "public"."auth_users"("id") ON DELETE cascade ON UPDATE no action;
+CREATE INDEX "lancamentos_itens_lancamento_id_idx" ON "lancamentos_itens" USING btree ("lancamento_id");
