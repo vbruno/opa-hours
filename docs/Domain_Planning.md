@@ -406,9 +406,9 @@ O GST é **opcional e configurável pelo usuário**.
 * nome
 * email
 * endereco
-* valor_hora_padrao (opcional)
+* valor_hora_padrao_cents (opcional)
 * aplica_gst (bool)
-* gst_percentual (opcional)
+* gst_percentual (opcional, inteiro)
 
 ### Tabela: clientes
 
@@ -427,10 +427,12 @@ O GST é **opcional e configurável pelo usuário**.
 * hora_fim (derivado)
 * break_min (derivado)
 * duracao_min (derivado)
-* adicional_dia (opcional)
-* valor_total (derivado)
+* adicional_dia_cents (opcional)
+* valor_total_cents (derivado)
 * observacoes
 * status_faturamento (draft|linked|invoiced)
+* created_at
+* updated_at
 
 **Constraint**
 
@@ -445,9 +447,11 @@ O GST é **opcional e configurável pelo usuário**.
 * end_at
 * break_min
 * duracao_min (derivado)
-* valor_hora
-* adicional_item (opcional)
+* valor_hora_cents
+* adicional_item_cents (opcional)
 * observacoes (opcional)
+* created_at
+* updated_at
 
 ### Tabela: invoices
 

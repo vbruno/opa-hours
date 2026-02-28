@@ -20,7 +20,7 @@
     "lint": "eslint .",
     "format": "prettier -w .",
     "db:check": "npm run build --silent && node dist/scripts/checkDb.js",
-    "db:generate": "drizzle-kit generate",
+    "db:generate": "npm run build --silent && drizzle-kit generate",
     "db:migrate": "drizzle-kit migrate",
     "db:studio": "drizzle-kit studio"
   },

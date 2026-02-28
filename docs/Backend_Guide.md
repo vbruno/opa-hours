@@ -112,9 +112,9 @@ Exemplo de payload:
 * nome
 * email
 * endereco
-* valor_hora_padrao (numeric, opcional)
+* valor_hora_padrao_cents (int, opcional)
 * aplica_gst (bool)
-* gst_percentual (numeric, opcional)
+* gst_percentual (int, opcional)
 
 #### `clientes`
 
@@ -133,10 +133,12 @@ Exemplo de payload:
 * hora_fim (timestamp with time zone, derivado do maior `end_at` dos itens)
 * break_min (int, derivado da soma de breaks dos itens)
 * duracao_min (int, derivado da soma de duração líquida dos itens)
-* adicional_dia (numeric, default 0)
-* valor_total (numeric, derivado)
+* adicional_dia_cents (int, default 0)
+* valor_total_cents (int, derivado)
 * observacoes (text, opcional)
 * status_faturamento (enum: draft|linked|invoiced)
+* created_at
+* updated_at
 
 **Constraints**
 
@@ -151,9 +153,11 @@ Exemplo de payload:
 * end_at (timestamp with time zone)
 * break_min (int)
 * duracao_min (int, derivado)
-* valor_hora (numeric)
-* adicional_item (numeric, default 0)
+* valor_hora_cents (int)
+* adicional_item_cents (int, default 0)
 * observacoes (text, opcional)
+* created_at
+* updated_at
 
 #### `invoices`
 

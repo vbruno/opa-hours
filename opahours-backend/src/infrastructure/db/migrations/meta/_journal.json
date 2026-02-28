@@ -43,6 +43,13 @@
       "when": 1771159234134,
       "tag": "0005_sweet_squirrel_girl",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1772236255418,
+      "tag": "0006_free_vance_astro",
+      "breakpoints": true
     }
   ]
 }
