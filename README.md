@@ -1,108 +1,63 @@
 # OpaHours
 
-Sistema para controle de horas trabalhadas e faturamento por invoices, com foco em consistencia de regras de negocio e rastreabilidade financeira.
+Backend em TypeScript para registro de horas de trabalho e preparação do faturamento de clientes. O projeto organiza regras de domínio, casos de uso, persistência e API em camadas separadas.
 
-## Status do Projeto
+## Estado atual
 
-Projeto em fase inicial (esqueleto de arquitetura e padroes definidos).
+**Em desenvolvimento.** A API já inclui autenticação, gestão de usuários e operações de registros de horas. O domínio de invoices e os cálculos de faturamento estão em construção; ainda não há rotas de invoices registradas na API.
 
-## Objetivo
+## O que já existe
 
-Garantir consistencia entre o ciclo completo:
+- Login, renovação e encerramento de sessão com tokens.
+- Rotas de usuários e registros de horas.
+- Persistência PostgreSQL com Drizzle ORM e migrações versionadas.
+- Documentação HTTP em `/docs` e verificação de serviço em `/health`.
+- Testes unitários e de integração para regras de domínio e rotas.
 
-- Horas registradas
-- Lancamentos diarios
-- Invoice em rascunho
-- Invoice emitida
-- Pagamento
+## Tecnologias
 
-## Arquitetura
+Node.js, TypeScript, Fastify, PostgreSQL, Drizzle ORM, Zod, Pino e Vitest.
 
-O projeto segue **Clean Architecture + DDD light**, com separacao por camadas e modulos de negocio:
+## Executar localmente
 
-- `domain`: entidades, value objects e regras de negocio
-- `application`: casos de uso e ports (interfaces)
-- `infrastructure`: implementacoes tecnicas (DB, logger, integracoes)
-- `api`: delivery HTTP, rotas e validacoes de entrada
-
-## Estrutura do Repositorio
-
-- `opahours-backend/`: workspace principal com scripts de execucao, lint, testes e build
-- `docs/`: arquitetura, dominio, stack e padroes de engenharia
-- `notes/`: anotacoes internas do projeto
-
-## Stack Tecnica
-
-- Node.js (LTS)
-- TypeScript
-- Fastify
-- PostgreSQL
-- Drizzle ORM
-- Zod
-- Pino
-- Vitest
-- ESLint + Prettier
-
-## Requisitos
-
-- Node.js 20+
-- npm 10+
-- PostgreSQL disponivel localmente
-
-## Setup Local
-
-1. Entre no workspace do backend:
+Requer Node.js 20+, npm 10+ e PostgreSQL. Os comandos abaixo são executados em `opahours-backend/`:
 
 ```bash
 cd opahours-backend
+npm ci
+cp .env.example .env
 ```
 
-2. Instale dependencias:
+Edite `.env` com as URLs do seu banco e segredos próprios para JWT. Depois:
 
 ```bash
-npm install
-```
-
-3. Configure variaveis de ambiente conforme `.env.example` (quando o arquivo estiver disponivel neste workspace).
-
-## Comandos de Desenvolvimento
-
-Executar em `opahours-backend/`:
-
-```bash
-npm run dev
-npm run build
-npm run start
-npm run lint
-npm run test
-npm run test:cov
-npm run db:generate
 npm run db:migrate
+npm run dev
 ```
 
-## Qualidade e Padroes
+A API usa a porta definida por `PORT` (3333 no exemplo). Com o servidor em execução, abra `http://localhost:3333/health` ou `http://localhost:3333/docs`.
 
-- Regras oficiais: `docs/Engineering_Standards.md`
-- Contrato de colaboracao: `docs/Collaboration_Contract.md`
+## Verificação
 
-## Documentacao
+```bash
+npm run lint
+npm run build
+npm run test
+```
 
-- `docs/Backend_Guide.md`
-- `docs/Backend_Architectura.md`
-- `docs/Backend_Stack.md`
-- `docs/Domain_Planning.md`
-- `docs/Frontend_Guide.md`
+`npm run test` executa os testes unitários. Para os testes de integração, configure também `DATABASE_URL_TEST` e execute `npm run test:integration`.
 
-## Roadmap Inicial
+## Organização do repositório
 
-- Implementar conexao com DB e schemas Drizzle
-- Subir API base com `GET /health`
-- Implementar primeiros casos de uso de `work-logs`
-- Cobrir regras criticas com testes unitarios e de integracao
+- `opahours-backend/src/domain`: entidades e regras de negócio.
+- `opahours-backend/src/application`: casos de uso e contratos.
+- `opahours-backend/src/infrastructure`: banco, repositórios e serviços técnicos.
+- `opahours-backend/src/api`: rotas e plugins HTTP.
+- `opahours-backend/test`: testes unitários e de integração.
+- `docs`: arquitetura, domínio e padrões do projeto.
+
+Para mais detalhes, consulte o [guia do backend](docs/Backend_Guide.md), a [arquitetura](docs/Backend_Architectura.md) e o [planejamento de domínio](docs/Domain_Planning.md).
 
 ## Autor
 
-**Bruno S Velho**
-- Email: bruno.velho@gmail.com
-- GitHub: https://github.com/vbruno
-- LinkedIn: https://www.linkedin.com/in/brunovelho/
+[Bruno S Velho](https://github.com/vbruno) · [LinkedIn](https://www.linkedin.com/in/brunovelho/)
